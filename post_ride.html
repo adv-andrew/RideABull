@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post a Ride - Ride A Bull</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="nav">
+        <a href="rides.html" class="nav-logo">Ride A Bull</a>
+    </nav>
+
+    <div class="container">
+        <div style="max-width: 600px; margin: 2rem auto;">
+            <h1>Post a Ride</h1>
+            <p style="color: #666; margin-bottom: 2rem;">
+                Share your journey and help fellow students get where they need to go.
+            </p>
+
+            <div class="card">
+                <form action="rides.html">
+                    <div class="form-group">
+                        <input type="text" placeholder="From" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" placeholder="To" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="date" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="time" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" placeholder="Number of Seats Available" min="1" max="6" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="number" placeholder="Price per Seat ($)" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <select>
+                            <option value="">Car Type (Optional)</option>
+                            <option value="sedan">Sedan</option>
+                            <option value="suv">SUV</option>
+                            <option value="van">Van</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <select multiple>
+                            <option value="music">Music Allowed</option>
+                            <option value="pets">Pets Allowed</option>
+                            <option value="smoking">No Smoking</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <textarea placeholder="Additional Notes (Optional)" rows="3" style="width: 100%; padding: 12px; border: 2px solid #E2E8F0; border-radius: var(--border-radius);"></textarea>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%;">Post Ride</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

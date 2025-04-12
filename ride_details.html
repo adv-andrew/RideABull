@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ride Details - Ride A Bull</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="nav">
+        <a href="rides.html" class="nav-logo">Ride A Bull</a>
+    </nav>
+
+    <div class="container">
+        <div style="max-width: 800px; margin: 2rem auto;">
+            <a href="rides.html" style="color: var(--primary-color); text-decoration: none; display: inline-block; margin-bottom: 1rem;">
+                ← Back to Rides
+            </a>
+
+            <div class="card" style="margin-bottom: 2rem;">
+                <h1>San Francisco → Los Angeles</h1>
+                <div class="ride-meta" style="margin: 1rem 0;">
+                    <span>🚗 John D.</span>
+                    <span>🕒 Today, 2:30 PM</span>
+                    <span>💺 3 seats left</span>
+                    <span>💰 $25/seat</span>
+                </div>
+                <div class="eco-stats" style="margin-bottom: 1rem;">
+                    🌱 This ride will save 25 lbs of CO₂
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 2rem;">
+                <h2>Route Map</h2>
+                <div class="map-placeholder">
+                    [Google Maps Route Placeholder]
+                </div>
+            </div>
+
+            <div class="card" style="margin-bottom: 2rem;">
+                <h2>Ride Details</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <h3>Driver</h3>
+                        <p>John D.</p>
+                        <p>⭐ 4.9 (120 rides)</p>
+                    </div>
+                    <div>
+                        <h3>Vehicle</h3>
+                        <p>Tesla Model 3</p>
+                        <p>🎵 Music Allowed</p>
+                        <p>🚫 No Smoking</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Pickup & Dropoff</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <h3>Pickup</h3>
+                        <p>📍 San Francisco State University</p>
+                        <p>1600 Holloway Ave, San Francisco, CA 94132</p>
+                    </div>
+                    <div>
+                        <h3>Dropoff</h3>
+                        <p>📍 University of Southern California</p>
+                        <p>University Park, Los Angeles, CA 90089</p>
+                    </div>
+                </div>
+            </div>
+
+            <div style="position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 1rem; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);">
+                <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <h3 style="margin: 0;">$25 per seat</h3>
+                        <p style="margin: 0; color: #666;">3 seats available</p>
+                    </div>
+                    <a href="rides.html" class="btn">Request to Join</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Rides - Ride A Bull</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav class="nav">
+        <a href="rides.html" class="nav-logo">Ride A Bull</a>
+        <a href="post_ride.html" class="btn">Post a Ride</a>
+    </nav>
+
+    <div class="container">
+        <div class="search-container">
+            <div class="form-group">
+                <input type="text" placeholder="From" required>
+            </div>
+            <div class="form-group">
+                <input type="text" placeholder="To" required>
+            </div>
+        </div>
+
+        <div class="filter-container">
+            <select>
+                <option value="">Date</option>
+                <option value="today">Today</option>
+                <option value="tomorrow">Tomorrow</option>
+                <option value="week">This Week</option>
+            </select>
+            <select>
+                <option value="">Seats Available</option>
+                <option value="1">1 Seat</option>
+                <option value="2">2 Seats</option>
+                <option value="3">3+ Seats</option>
+            </select>
+            <select>
+                <option value="">Price Range</option>
+                <option value="low">$0 - $20</option>
+                <option value="medium">$21 - $40</option>
+                <option value="high">$41+</option>
+            </select>
+        </div>
+
+        <div class="rides-list">
+            <!-- Ride Card 1 -->
+            <a href="ride_details.html" style="text-decoration: none; color: inherit;">
+                <div class="card ride-card">
+                    <div class="ride-info">
+                        <h3>San Francisco → Los Angeles</h3>
+                        <div class="ride-meta">
+                            <span>🚗 John D.</span>
+                            <span>🕒 Today, 2:30 PM</span>
+                            <span>💺 3 seats left</span>
+                            <span>💰 $25/seat</span>
+                        </div>
+                    </div>
+                    <div class="eco-stats">
+                        🌱 Saves 25 lbs CO₂
+                    </div>
+                </div>
+            </a>
+
+            <!-- Ride Card 2 -->
+            <a href="ride_details.html" style="text-decoration: none; color: inherit;">
+                <div class="card ride-card">
+                    <div class="ride-info">
+                        <h3>Berkeley → Stanford</h3>
+                        <div class="ride-meta">
+                            <span>🚗 Sarah M.</span>
+                            <span>🕒 Tomorrow, 9:00 AM</span>
+                            <span>💺 2 seats left</span>
+                            <span>💰 $15/seat</span>
+                        </div>
+                    </div>
+                    <div class="eco-stats">
+                        🌱 Saves 15 lbs CO₂
+                    </div>
+                </div>
+            </a>
+
+            <!-- Ride Card 3 -->
+            <a href="ride_details.html" style="text-decoration: none; color: inherit;">
+                <div class="card ride-card">
+                    <div class="ride-info">
+                        <h3>Davis → Sacramento</h3>
+                        <div class="ride-meta">
+                            <span>🚗 Mike R.</span>
+                            <span>🕒 Today, 5:00 PM</span>
+                            <span>💺 1 seat left</span>
+                            <span>💰 $10/seat</span>
+                        </div>
+                    </div>
+                    <div class="eco-stats">
+                        🌱 Saves 10 lbs CO₂
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</body>
+</html> 
