@@ -311,17 +311,23 @@
                 }
 
                 const ride = await response.json();
+                
+                // Validate ride data
+                if (!ride || !ride.origin || !ride.destination) {
+                    throw new Error('Invalid ride data received');
+                }
+
                 localStorage.setItem('currentRide', JSON.stringify(ride));
                 
                 // Update the page with ride details
                 document.getElementById('rideDetails').innerHTML = `
                     <div class="card" style="margin-bottom: 2rem;">
-                        <h1>${ride.origin.name} → ${ride.destination.name}</h1>
+                        <h1>${ride.origin.name || 'Unknown Origin'} → ${ride.destination.name || 'Unknown Destination'}</h1>
                         <div class="ride-meta" style="margin: 1rem 0;">
-                            <span>🚗 ${ride.driverId.name}</span>
+                            <span>🚗 ${ride.driverId?.name || 'Unknown Driver'}</span>
                             <span>🕒 ${formatDate(ride.startTime)}</span>
-                            <span>💺 ${ride.availableSeats} seats left</span>
-                            <span>💰 $${ride.pricePerSeat}/seat</span>
+                            <span>💺 ${ride.availableSeats || 0} seats left</span>
+                            <span>💰 $${ride.pricePerSeat || 0}/seat</span>
                             <span>🛣️ <span id="route-distance">Calculating...</span></span>
                             <span>⏱️ <span id="route-duration">Calculating...</span></span>
                         </div>
@@ -337,11 +343,11 @@
                         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                             <div>
                                 <h3>Pickup</h3>
-                                <p>📍 ${ride.origin.name}</p>
+                                <p>📍 ${ride.origin.name || 'Unknown Location'}</p>
                             </div>
                             <div>
                                 <h3>Dropoff</h3>
-                                <p>📍 ${ride.destination.name}</p>
+                                <p>📍 ${ride.destination.name || 'Unknown Location'}</p>
                             </div>
                         </div>
                     </div>
@@ -352,15 +358,15 @@
                         <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
                             <div>
                                 <h3>Make & Model</h3>
-                                <p>🚗 ${ride.vehicle.makeModel}</p>
+                                <p>🚗 ${ride.vehicle.makeModel || 'Unknown'}</p>
                             </div>
                             <div>
                                 <h3>Year</h3>
-                                <p>📅 ${ride.vehicle.year}</p>
+                                <p>📅 ${ride.vehicle.year || 'Unknown'}</p>
                             </div>
                             <div>
                                 <h3>Type</h3>
-                                <p>🚘 ${ride.vehicle.type}</p>
+                                <p>🚘 ${ride.vehicle.type || 'Unknown'}</p>
                             </div>
                         </div>
                     </div>
@@ -374,7 +380,7 @@
                                     <p id="solo-emissions">Calculating...</p>
                                 </div>
                                 <div class="emission-stat">
-                                    <h3>With ${ride.totalSeats} Passengers</h3>
+                                    <h3>With ${ride.totalSeats || 1} Passengers</h3>
                                     <p id="carpool-emissions">Calculating...</p>
                                 </div>
                             </div>
@@ -385,8 +391,8 @@
                     <div style="position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 1rem; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);">
                         <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
                             <div>
-                                <h3 style="margin: 0;">$${ride.pricePerSeat} per seat</h3>
-                                <p style="margin: 0; color: #666;">${ride.availableSeats} seats available</p>
+                                <h3 style="margin: 0;">$${ride.pricePerSeat || 0} per seat</h3>
+                                <p style="margin: 0; color: #666;">${ride.availableSeats || 0} seats available</p>
                             </div>
                             <button onclick="requestToJoin('${ride._id}')" class="btn">Request to Join</button>
                         </div>
@@ -400,7 +406,7 @@
                 console.error('Error loading ride details:', error);
                 document.getElementById('rideDetails').innerHTML = `
                     <div class="card">
-                        <p style="color: red;">Error loading ride details. Please try again later.</p>
+                        <p style="color: red;">Error loading ride details: ${error.message}</p>
                     </div>
                 `;
             }
