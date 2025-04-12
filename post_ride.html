@@ -22,21 +22,54 @@
             <div class="card">
                 <form id="rideForm">
                     <div class="form-group">
-                        <input type="text" id="origin" placeholder="From" required>
+                        <label for="origin">From</label>
+                        <select id="origin" required>
+                            <option value="">Select Departure Location</option>
+                        </select>
                     </div>
                     <div class="form-group">
-                        <input type="text" id="destination" placeholder="To" required>
+                        <label for="destination">To</label>
+                        <select id="destination" required>
+                            <option value="">Select Destination</option>
+                        </select>
                     </div>
                     <div class="form-group">
+                        <label for="startTime">Departure Time</label>
                         <input type="datetime-local" id="startTime" required>
                     </div>
                     <div class="form-group">
+                        <label for="totalSeats">Available Seats</label>
                         <input type="number" id="totalSeats" placeholder="Total Number of Seats" min="1" max="6" required>
                     </div>
                     <div class="form-group">
-                        <input type="number" id="pricePerSeat" placeholder="Price per Seat ($)" min="0" required>
+                        <label for="pricePerSeat">Price per Seat ($)</label>
+                        <input type="number" id="pricePerSeat" placeholder="Price per Seat" min="0" required>
                     </div>
                     <div class="form-group">
+                        <label>Vehicle Information</label>
+                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                            <div>
+                                <input type="text" id="vehicleMakeModel" placeholder="Make and Model (e.g., Honda Civic)" required>
+                            </div>
+                            <div>
+                                <input type="number" id="vehicleYear" placeholder="Year" min="1990" max="2024" required>
+                            </div>
+                            <div>
+                                <select id="vehicleType" required>
+                                    <option value="">Type</option>
+                                    <option value="Sedan">Sedan</option>
+                                    <option value="SUV">SUV</option>
+                                    <option value="Truck">Truck</option>
+                                    <option value="Van">Van</option>
+                                    <option value="Coupe">Coupe</option>
+                                    <option value="Electric">Electric</option>
+                                    <option value="Hybrid">Hybrid</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="preferences">Preferences</label>
                         <textarea id="preferences" placeholder="Preferences (e.g., no loud music, pets allowed)" rows="3" style="width: 100%; padding: 12px; border: 2px solid #E2E8F0; border-radius: var(--border-radius);"></textarea>
                     </div>
                     <button type="submit" class="btn" style="width: 100%;">Post Ride</button>
@@ -46,6 +79,63 @@
     </div>
 
     <script>
+        // Florida colleges with their coordinates
+        const floridaColleges = [
+            {
+                name: "University of South Florida",
+                coordinates: { lat: 28.0587, lng: -82.4139 }
+            },
+            {
+                name: "University of Florida",
+                coordinates: { lat: 29.6436, lng: -82.3549 }
+            },
+            {
+                name: "Florida State University",
+                coordinates: { lat: 30.4419, lng: -84.2985 }
+            },
+            {
+                name: "University of Central Florida",
+                coordinates: { lat: 28.6024, lng: -81.2001 }
+            },
+            {
+                name: "University of Miami",
+                coordinates: { lat: 25.7217, lng: -80.2793 }
+            },
+            {
+                name: "Florida International University",
+                coordinates: { lat: 25.7574, lng: -80.3733 }
+            },
+            {
+                name: "University of North Florida",
+                coordinates: { lat: 30.2571, lng: -81.5085 }
+            },
+            {
+                name: "Florida Gulf Coast University",
+                coordinates: { lat: 26.4620, lng: -81.7738 }
+            },
+            {
+                name: "University of Tampa",
+                coordinates: { lat: 27.9506, lng: -82.4572 }
+            },
+            {
+                name: "Florida Atlantic University",
+                coordinates: { lat: 26.3719, lng: -80.1020 }
+            }
+        ];
+
+        // Populate dropdowns with colleges
+        function populateCollegeDropdowns() {
+            const originSelect = document.getElementById('origin');
+            const destinationSelect = document.getElementById('destination');
+
+            floridaColleges.forEach(college => {
+                const originOption = new Option(college.name, JSON.stringify(college));
+                const destOption = new Option(college.name, JSON.stringify(college));
+                originSelect.add(originOption);
+                destinationSelect.add(destOption);
+            });
+        }
+
         // Check if user is logged in
         const token = localStorage.getItem('token');
         if (!token) {
@@ -53,50 +143,42 @@
             window.location.href = 'index.html';
         }
 
-        // Add a function to validate token
-        function isTokenValid(token) {
-            if (!token) return false;
-            // Check if token starts with 'Bearer '
-            if (!token.startsWith('Bearer ')) {
-                // If token exists but doesn't have Bearer prefix, add it
-                localStorage.setItem('token', `Bearer ${token}`);
-                return true;
-            }
-            return true;
-        }
+        // Populate dropdowns when page loads
+        document.addEventListener('DOMContentLoaded', populateCollegeDropdowns);
 
         document.getElementById('rideForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const token = localStorage.getItem('token');
-            if (!isTokenValid(token)) {
-                alert('Your session has expired. Please log in again.');
-                window.location.href = 'index.html';
+            const originCollege = JSON.parse(document.getElementById('origin').value);
+            const destCollege = JSON.parse(document.getElementById('destination').value);
+
+            if (originCollege.name === destCollege.name) {
+                alert('Origin and destination cannot be the same');
                 return;
             }
 
-            // Example coordinates (you might want to use Google Maps API to get actual coordinates)
-            const originCoords = { lat: 29.6436, lng: -82.3549 }; // UF coordinates
-            const destCoords = { lat: 28.0587, lng: -82.4139 };   // USF coordinates
-
             const rideData = {
                 origin: {
-                    name: document.getElementById('origin').value,
-                    coordinates: originCoords
+                    name: originCollege.name,
+                    coordinates: originCollege.coordinates
                 },
                 destination: {
-                    name: document.getElementById('destination').value,
-                    coordinates: destCoords
+                    name: destCollege.name,
+                    coordinates: destCollege.coordinates
                 },
                 startTime: new Date(document.getElementById('startTime').value).toISOString(),
                 totalSeats: parseInt(document.getElementById('totalSeats').value),
                 availableSeats: parseInt(document.getElementById('totalSeats').value),
                 pricePerSeat: parseFloat(document.getElementById('pricePerSeat').value),
-                preferences: document.getElementById('preferences').value.split(',').map(pref => pref.trim())
+                vehicle: {
+                    makeModel: document.getElementById('vehicleMakeModel').value,
+                    year: parseInt(document.getElementById('vehicleYear').value),
+                    type: document.getElementById('vehicleType').value
+                },
+                preferences: document.getElementById('preferences').value.split(',').map(pref => pref.trim()).filter(pref => pref)
             };
 
             try {
-                console.log('Sending request with token:', token);
                 const response = await fetch('http://localhost:3000/api/rides', {
                     method: 'POST',
                     headers: {
@@ -106,20 +188,12 @@
                     body: JSON.stringify(rideData)
                 });
 
-                const data = await response.json();
-                
                 if (response.ok) {
-                    console.log('Ride posted successfully:', data);
                     alert('Ride posted successfully!');
                     window.location.href = 'rides.html';
                 } else {
-                    if (response.status === 401) {
-                        alert('Your session has expired. Please log in again.');
-                        localStorage.removeItem('token');
-                        window.location.href = 'index.html';
-                    } else {
-                        throw new Error(data.message || 'Failed to post ride');
-                    }
+                    const error = await response.json();
+                    throw new Error(error.message || 'Failed to post ride');
                 }
             } catch (error) {
                 console.error('Error posting ride:', error);

@@ -57,6 +57,23 @@ const RideSchema = new mongoose.Schema({
     required: [true, 'Please provide total seats'],
     min: [1, 'Total seats must be at least 1'],
   },
+  vehicle: {
+    makeModel: {
+      type: String,
+      required: [true, 'Please provide vehicle make and model'],
+    },
+    year: {
+      type: Number,
+      required: [true, 'Please provide vehicle year'],
+      min: [1990, 'Vehicle year must be 1990 or later'],
+      max: [2024, 'Vehicle year cannot be in the future'],
+    },
+    type: {
+      type: String,
+      required: [true, 'Please provide vehicle type'],
+      enum: ['Sedan', 'SUV', 'Truck', 'Van', 'Coupe', 'Electric', 'Hybrid'],
+    },
+  },
   preferences: [{
     type: String,
   }],

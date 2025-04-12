@@ -84,7 +84,7 @@
         // Fetch and display rides
         async function fetchRides() {
             try {
-                const response = await fetch('/api/rides');
+                const response = await fetch('http://localhost:3000/api/rides');
                 const rides = await response.json();
                 displayRides(rides);
             } catch (error) {
@@ -99,13 +99,13 @@
                 <a href="ride_details.html?id=${ride._id}" style="text-decoration: none; color: inherit;">
                     <div class="card ride-card">
                         <div class="ride-info">
-                            <h3>${ride.origin} → ${ride.destination}</h3>
+                            <h3>${ride.origin.name} → ${ride.destination.name}</h3>
                             <div class="ride-meta">
-                                <span>🕒 ${formatDate(ride.date)}</span>
-                                <span>💺 ${ride.seats} seats left</span>
-                                <span>💰 $${ride.price}/seat</span>
+                                <span>🕒 ${formatDate(ride.startTime)}</span>
+                                <span>💺 ${ride.availableSeats} seats left</span>
+                                <span>💰 $${ride.pricePerSeat}/seat</span>
                             </div>
-                            ${ride.preferences ? `<p class="preferences">${ride.preferences}</p>` : ''}
+                            ${ride.preferences && ride.preferences.length > 0 ? `<p class="preferences">${ride.preferences.join(', ')}</p>` : ''}
                         </div>
                         <div class="eco-stats">
                             🌱 Saves ${Math.floor(Math.random() * 20 + 10)} lbs CO₂
