@@ -6,6 +6,13 @@
     <title>Ride Details - Ride A Bull</title>
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
     <nav class="nav">
@@ -33,9 +40,7 @@
 
             <div class="card" style="margin-bottom: 2rem;">
                 <h2>Route Map</h2>
-                <div class="map-placeholder">
-                    [Google Maps Route Placeholder]
-                </div>
+                <div id="map"></div>
             </div>
 
             <div class="card" style="margin-bottom: 2rem;">
@@ -82,5 +87,93 @@
             </div>
         </div>
     </div>
+    <!-- Google Maps JavaScript API Script -->
+    <script>
+        // Pickup and dropoff locations
+        const pickupLocation = {
+            address: "San Francisco State University, 1600 Holloway Ave, San Francisco, CA 94132",
+            lat: 37.7241,
+            lng: -122.4799
+        };
+
+        const dropoffLocation = {
+            address: "University of Southern California, University Park, Los Angeles, CA 90089",
+            lat: 34.0224,
+            lng: -118.2851
+        };
+
+        // Initialize the map and directions
+        function initMap() {
+            // Create a map centered at the midpoint between pickup and dropoff
+            const midpointLat = (pickupLocation.lat + dropoffLocation.lat) / 2;
+            const midpointLng = (pickupLocation.lng + dropoffLocation.lng) / 2;
+
+            const map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 6,
+                center: { lat: midpointLat, lng: midpointLng },
+                mapTypeId: google.maps.MapTypeId.ROADMAP
+            });
+
+            // Create a DirectionsService object to use the Directions API
+            const directionsService = new google.maps.DirectionsService();
+
+            // Create a DirectionsRenderer object to display the route
+            const directionsRenderer = new google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: false
+            });
+
+            // Define the route request
+            const request = {
+                origin: { lat: pickupLocation.lat, lng: pickupLocation.lng },
+                destination: { lat: dropoffLocation.lat, lng: dropoffLocation.lng },
+                travelMode: google.maps.TravelMode.DRIVING
+            };
+
+            // Get the route from the DirectionsService
+            directionsService.route(request, function(result, status) {
+                if (status == google.maps.DirectionsStatus.OK) {
+                    // Display the route on the map
+                    directionsRenderer.setDirections(result);
+
+                    // Get route details
+                    const route = result.routes[0];
+                    const leg = route.legs[0];
+
+                    // Update ride information with actual distance and duration
+                    document.getElementById('route-distance').textContent = leg.distance.text;
+                    document.getElementById('route-duration').textContent = leg.duration.text;
+                } else {
+                    console.error('Directions request failed due to ' + status);
+                    // Fallback if directions request fails
+                    alert('Could not display directions due to: ' + status);
+                }
+            });
+        }
+    </script>
+
+    <!-- Add this div to display route information -->
+    <script>
+        // Add route information to the page
+        document.addEventListener('DOMContentLoaded', function() {
+            const rideMetaDiv = document.querySelector('.ride-meta');
+            if (rideMetaDiv) {
+                // Add distance and duration placeholders
+                const distanceSpan = document.createElement('span');
+                distanceSpan.innerHTML = '🛣️ <span id="route-distance">Calculating...</span>';
+
+                const durationSpan = document.createElement('span');
+                durationSpan.innerHTML = '⏱️ <span id="route-duration">Calculating...</span>';
+
+                rideMetaDiv.appendChild(distanceSpan);
+                rideMetaDiv.appendChild(durationSpan);
+            }
+        });
+    </script>
+
+    <!-- Load the Google Maps JavaScript API with your API key -->
+    <script async defer
+        src="API KEY">
+    </script>
 </body>
-</html> 
+</html>
