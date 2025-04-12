@@ -13,6 +13,8 @@
             border-radius: 8px;
         }
     </style>
+    <!-- Load the env-loader.min.js script which contains the API key -->
+    <script src="env-loader.min.js"></script>
 </head>
 <body>
     <nav class="nav">
@@ -25,153 +27,215 @@
                 ← Back to Rides
             </a>
 
-            <div class="card" style="margin-bottom: 2rem;">
-                <h1>San Francisco → Los Angeles</h1>
-                <div class="ride-meta" style="margin: 1rem 0;">
-                    <span>🚗 John D.</span>
-                    <span>🕒 Today, 2:30 PM</span>
-                    <span>💺 3 seats left</span>
-                    <span>💰 $25/seat</span>
-                </div>
-                <div class="eco-stats" style="margin-bottom: 1rem;">
-                    🌱 This ride will save 25 lbs of CO₂
-                </div>
-            </div>
-
-            <div class="card" style="margin-bottom: 2rem;">
-                <h2>Route Map</h2>
-                <div id="map"></div>
-            </div>
-
-            <div class="card" style="margin-bottom: 2rem;">
-                <h2>Ride Details</h2>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div>
-                        <h3>Driver</h3>
-                        <p>John D.</p>
-                        <p>⭐ 4.9 (120 rides)</p>
-                    </div>
-                    <div>
-                        <h3>Vehicle</h3>
-                        <p>Tesla Model 3</p>
-                        <p>🎵 Music Allowed</p>
-                        <p>🚫 No Smoking</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h2>Pickup & Dropoff</h2>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-                    <div>
-                        <h3>Pickup</h3>
-                        <p>📍 San Francisco State University</p>
-                        <p>1600 Holloway Ave, San Francisco, CA 94132</p>
-                    </div>
-                    <div>
-                        <h3>Dropoff</h3>
-                        <p>📍 University of Southern California</p>
-                        <p>University Park, Los Angeles, CA 90089</p>
-                    </div>
-                </div>
-            </div>
-
-            <div style="position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 1rem; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);">
-                <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <h3 style="margin: 0;">$25 per seat</h3>
-                        <p style="margin: 0; color: #666;">3 seats available</p>
-                    </div>
-                    <a href="rides.html" class="btn">Request to Join</a>
-                </div>
-            </div>
+            <div id="rideDetails">Loading ride details...</div>
         </div>
     </div>
+
     <!-- Google Maps JavaScript API Script -->
     <script>
-        // Pickup and dropoff locations
-        const pickupLocation = {
-            address: "San Francisco State University, 1600 Holloway Ave, San Francisco, CA 94132",
-            lat: 37.7241,
-            lng: -122.4799
-        };
+        let map;
+        let directionsService;
+        let directionsRenderer;
 
-        const dropoffLocation = {
-            address: "University of Southern California, University Park, Los Angeles, CA 90089",
-            lat: 34.0224,
-            lng: -118.2851
-        };
-
-        // Initialize the map and directions
         function initMap() {
-            // Create a map centered at the midpoint between pickup and dropoff
-            const midpointLat = (pickupLocation.lat + dropoffLocation.lat) / 2;
-            const midpointLng = (pickupLocation.lng + dropoffLocation.lng) / 2;
+            if (!document.getElementById('map')) {
+                console.log('Map element not found, waiting for ride details to load...');
+                return;
+            }
 
-            const map = new google.maps.Map(document.getElementById("map"), {
-                zoom: 6,
-                center: { lat: midpointLat, lng: midpointLng },
-                mapTypeId: google.maps.MapTypeId.ROADMAP
+            directionsService = new google.maps.DirectionsService();
+            directionsRenderer = new google.maps.DirectionsRenderer();
+            
+            // Create a default map centered at Florida
+            map = new google.maps.Map(document.getElementById("map"), {
+                zoom: 7,
+                center: { lat: 28.5383, lng: -81.3792 }, // Orlando, FL
             });
+            
+            directionsRenderer.setMap(map);
+        }
 
-            // Create a DirectionsService object to use the Directions API
-            const directionsService = new google.maps.DirectionsService();
+        function updateRoute(origin, destination) {
+            if (!directionsService || !directionsRenderer) {
+                console.log('Directions service not initialized yet');
+                return;
+            }
 
-            // Create a DirectionsRenderer object to display the route
-            const directionsRenderer = new google.maps.DirectionsRenderer({
-                map: map,
-                suppressMarkers: false
-            });
-
-            // Define the route request
             const request = {
-                origin: { lat: pickupLocation.lat, lng: pickupLocation.lng },
-                destination: { lat: dropoffLocation.lat, lng: dropoffLocation.lng },
+                origin: origin.coordinates,
+                destination: destination.coordinates,
                 travelMode: google.maps.TravelMode.DRIVING
             };
 
-            // Get the route from the DirectionsService
             directionsService.route(request, function(result, status) {
                 if (status == google.maps.DirectionsStatus.OK) {
-                    // Display the route on the map
                     directionsRenderer.setDirections(result);
-
-                    // Get route details
                     const route = result.routes[0];
                     const leg = route.legs[0];
-
-                    // Update ride information with actual distance and duration
+                    
+                    // Update distance and duration
                     document.getElementById('route-distance').textContent = leg.distance.text;
                     document.getElementById('route-duration').textContent = leg.duration.text;
                 } else {
                     console.error('Directions request failed due to ' + status);
-                    // Fallback if directions request fails
-                    alert('Could not display directions due to: ' + status);
                 }
             });
         }
-    </script>
 
-    <!-- Add this div to display route information -->
-    <script>
-        // Add route information to the page
-        document.addEventListener('DOMContentLoaded', function() {
-            const rideMetaDiv = document.querySelector('.ride-meta');
-            if (rideMetaDiv) {
-                // Add distance and duration placeholders
-                const distanceSpan = document.createElement('span');
-                distanceSpan.innerHTML = '🛣️ <span id="route-distance">Calculating...</span>';
-
-                const durationSpan = document.createElement('span');
-                durationSpan.innerHTML = '⏱️ <span id="route-duration">Calculating...</span>';
-
-                rideMetaDiv.appendChild(distanceSpan);
-                rideMetaDiv.appendChild(durationSpan);
+        // Function to reinitialize map
+        function reinitializeMap(ride) {
+            initMap();
+            if (ride && ride.origin && ride.destination) {
+                updateRoute(ride.origin, ride.destination);
             }
-        });
+        }
     </script>
 
-    <!-- Load the env-loader.min.js script which contains the API key -->
-    <script src="env-loader.min.js"></script>
+    <script>
+        // Function to format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            if (date.toDateString() === today.toDateString()) {
+                return `Today, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            } else if (date.toDateString() === tomorrow.toDateString()) {
+                return `Tomorrow, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            } else {
+                return date.toLocaleDateString() + ', ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+        }
+
+        // Function to get URL parameters
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // Function to load ride details
+        async function loadRideDetails() {
+            const rideId = getUrlParameter('id');
+            if (!rideId) {
+                alert('No ride ID provided');
+                window.location.href = 'rides.html';
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                const response = await fetch(`http://localhost:3000/api/rides/${rideId}`, {
+                    headers: {
+                        'Authorization': token
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch ride details');
+                }
+
+                const ride = await response.json();
+                
+                // Update the page with ride details
+                document.getElementById('rideDetails').innerHTML = `
+                    <div class="card" style="margin-bottom: 2rem;">
+                        <h1>${ride.origin.name} → ${ride.destination.name}</h1>
+                        <div class="ride-meta" style="margin: 1rem 0;">
+                            <span>🚗 ${ride.driverId.name}</span>
+                            <span>🕒 ${formatDate(ride.startTime)}</span>
+                            <span>💺 ${ride.availableSeats} seats left</span>
+                            <span>💰 $${ride.pricePerSeat}/seat</span>
+                            <span>🛣️ <span id="route-distance">Calculating...</span></span>
+                            <span>⏱️ <span id="route-duration">Calculating...</span></span>
+                        </div>
+                    </div>
+
+                    <div class="card" style="margin-bottom: 2rem;">
+                        <h2>Route Map</h2>
+                        <div id="map"></div>
+                    </div>
+
+                    <div class="card" style="margin-bottom: 2rem;">
+                        <h2>Pickup & Dropoff</h2>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div>
+                                <h3>Pickup</h3>
+                                <p>📍 ${ride.origin.name}</p>
+                            </div>
+                            <div>
+                                <h3>Dropoff</h3>
+                                <p>📍 ${ride.destination.name}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="position: fixed; bottom: 0; left: 0; right: 0; background: white; padding: 1rem; box-shadow: 0 -2px 10px rgba(0,0,0,0.1);">
+                        <div class="container" style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <h3 style="margin: 0;">$${ride.pricePerSeat} per seat</h3>
+                                <p style="margin: 0; color: #666;">${ride.availableSeats} seats available</p>
+                            </div>
+                            <button onclick="requestToJoin('${ride._id}')" class="btn">Request to Join</button>
+                        </div>
+                    </div>
+                `;
+
+                // Initialize map after the DOM is updated
+                setTimeout(() => reinitializeMap(ride), 100);
+
+            } catch (error) {
+                console.error('Error loading ride details:', error);
+                document.getElementById('rideDetails').innerHTML = `
+                    <div class="card">
+                        <p style="color: red;">Error loading ride details. Please try again later.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Function to request to join a ride
+        async function requestToJoin(rideId) {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                const response = await fetch(`http://localhost:3000/api/rides/${rideId}/request`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': token,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Request sent successfully!');
+                    window.location.href = 'rides.html';
+                } else {
+                    throw new Error(data.message || 'Failed to send request');
+                }
+            } catch (error) {
+                alert('Error sending request: ' + error.message);
+            }
+        }
+
+        // Load ride details when page loads
+        document.addEventListener('DOMContentLoaded', loadRideDetails);
+    </script>
+    
+    <!-- Load Google Maps JavaScript API -->
+    <script async
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCY7x3NFuD9HC97sGgghNZEUvREq2TRZE0&callback=initMap">
+    </script>
 </body>
 </html>

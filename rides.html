@@ -75,63 +75,61 @@
             </select>
         </div>
 
-        <div class="rides-list">
-            <!-- Ride Card 1 -->
-            <a href="ride_details.html" style="text-decoration: none; color: inherit;">
-                <div class="card ride-card">
-                    <div class="ride-info">
-                        <h3>University of Florida → Florida State University</h3>
-                        <div class="ride-meta">
-                            <span>🚗 John D.</span>
-                            <span>🕒 Today, 2:30 PM</span>
-                            <span>💺 3 seats left</span>
-                            <span>💰 $25/seat</span>
-                        </div>
-                    </div>
-                    <div class="eco-stats">
-                        🌱 Saves 25 lbs CO₂
-                    </div>
-                </div>
-            </a>
-
-            <!-- Ride Card 2 -->
-            <a href="ride_details.html" style="text-decoration: none; color: inherit;">
-                <div class="card ride-card">
-                    <div class="ride-info">
-                        <h3>University of South Florida → University of Central Florida</h3>
-                        <div class="ride-meta">
-                            <span>🚗 Sarah M.</span>
-                            <span>🕒 Tomorrow, 9:00 AM</span>
-                            <span>💺 2 seats left</span>
-                            <span>💰 $15/seat</span>
-                        </div>
-                    </div>
-                    <div class="eco-stats">
-                        🌱 Saves 15 lbs CO₂
-                    </div>
-                </div>
-            </a>
-
-            <!-- Ride Card 3 -->
-            <a href="ride_details.html" style="text-decoration: none; color: inherit;">
-                <div class="card ride-card">
-                    <div class="ride-info">
-                        <h3>Florida International University → Florida Atlantic University</h3>
-                        <div class="ride-meta">
-                            <span>🚗 Mike R.</span>
-                            <span>🕒 Today, 5:00 PM</span>
-                            <span>💺 1 seat left</span>
-                            <span>💰 $10/seat</span>
-                        </div>
-                    </div>
-                    <div class="eco-stats">
-                        🌱 Saves 10 lbs CO₂
-                    </div>
-                </div>
-            </a>
+        <div class="rides-list" id="ridesList">
+            <!-- Rides will be dynamically inserted here -->
         </div>
     </div>
+
     <script>
+        // Fetch and display rides
+        async function fetchRides() {
+            try {
+                const response = await fetch('/api/rides');
+                const rides = await response.json();
+                displayRides(rides);
+            } catch (error) {
+                console.error('Error fetching rides:', error);
+                document.getElementById('ridesList').innerHTML = '<p>Error loading rides. Please try again later.</p>';
+            }
+        }
+
+        function displayRides(rides) {
+            const ridesList = document.getElementById('ridesList');
+            ridesList.innerHTML = rides.map(ride => `
+                <a href="ride_details.html?id=${ride._id}" style="text-decoration: none; color: inherit;">
+                    <div class="card ride-card">
+                        <div class="ride-info">
+                            <h3>${ride.origin} → ${ride.destination}</h3>
+                            <div class="ride-meta">
+                                <span>🕒 ${formatDate(ride.date)}</span>
+                                <span>💺 ${ride.seats} seats left</span>
+                                <span>💰 $${ride.price}/seat</span>
+                            </div>
+                            ${ride.preferences ? `<p class="preferences">${ride.preferences}</p>` : ''}
+                        </div>
+                        <div class="eco-stats">
+                            🌱 Saves ${Math.floor(Math.random() * 20 + 10)} lbs CO₂
+                        </div>
+                    </div>
+                </a>
+            `).join('');
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const today = new Date();
+            const tomorrow = new Date(today);
+            tomorrow.setDate(tomorrow.getDate() + 1);
+
+            if (date.toDateString() === today.toDateString()) {
+                return `Today, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            } else if (date.toDateString() === tomorrow.toDateString()) {
+                return `Tomorrow, ${date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+            } else {
+                return date.toLocaleDateString() + ', ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            }
+        }
+
         function searchRides() {
             const fromCity = document.getElementById('fromCity').value;
             const toCity = document.getElementById('toCity').value;
@@ -188,6 +186,9 @@
                 fromSelect.value = '';
             }
         });
+
+        // Load rides when the page loads
+        fetchRides();
     </script>
 </body>
 </html> 

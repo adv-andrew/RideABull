@@ -20,21 +20,21 @@
             </p>
 
             <div class="card">
-                <form action="verify.html">
+                <form id="registerForm">
                     <div class="form-group">
-                        <input type="text" placeholder="Full Name" required>
+                        <input type="text" id="name" placeholder="Full Name" required>
                     </div>
                     <div class="form-group">
-                        <input type="email" placeholder="University Email" required>
+                        <input type="email" id="email" placeholder="University Email" required>
                     </div>
                     <div class="form-group">
-                        <input type="text" placeholder="University Name" required>
+                        <input type="text" id="university" placeholder="University Name" required>
                     </div>
                     <div class="form-group">
-                        <input type="password" placeholder="Password" required>
+                        <input type="password" id="password" placeholder="Password" required>
                     </div>
                     <div class="form-group">
-                        <input type="password" placeholder="Confirm Password" required>
+                        <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
                     </div>
                     <button type="submit" class="btn" style="width: 100%;">Register</button>
                 </form>
@@ -45,5 +45,49 @@
             </p>
         </div>
     </div>
+    <script>
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            const userData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                university: document.getElementById('university').value,
+                password: password
+            };
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/users/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(userData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Store the token with 'Bearer ' prefix
+                    localStorage.setItem('token', `Bearer ${data.token}`);
+                    console.log('Token stored:', localStorage.getItem('token'));
+                    // Redirect to rides page
+                    window.location.href = 'rides.html';
+                } else {
+                    throw new Error(data.message || 'Registration failed');
+                }
+            } catch (error) {
+                alert('Error during registration: ' + error.message);
+            }
+        });
+    </script>
 </body>
 </html> 

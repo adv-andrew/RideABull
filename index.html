@@ -20,12 +20,12 @@
             </p>
             
             <div class="card" style="max-width: 400px; margin: 0 auto;">
-                <form>
+                <form id="loginForm">
                     <div class="form-group">
-                        <input type="email" placeholder="University Email" required>
+                        <input type="email" id="email" placeholder="University Email" required>
                     </div>
                     <div class="form-group">
-                        <input type="password" placeholder="Password" required>
+                        <input type="password" id="password" placeholder="Password" required>
                     </div>
                     <button type="submit" class="btn" style="width: 100%;">Login with University Email</button>
                 </form>
@@ -36,5 +36,40 @@
             </p>
         </div>
     </div>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const loginData = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/users/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(loginData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Store token with Bearer prefix
+                    localStorage.setItem('token', `Bearer ${data.token}`);
+                    console.log('Login successful, token stored:', localStorage.getItem('token'));
+                    window.location.href = 'rides.html';
+                } else {
+                    throw new Error(data.message || 'Login failed');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login failed: ' + error.message);
+            }
+        });
+    </script>
 </body>
 </html> 
