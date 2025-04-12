@@ -16,11 +16,42 @@
     <div class="container">
         <div class="search-container">
             <div class="form-group">
-                <input type="text" placeholder="From" required>
+                <select id="fromCity" required>
+                    <option value="">Select Departure</option>
+                    <option value="University of Florida">University of Florida</option>
+                    <option value="Florida State University">Florida State University</option>
+                    <option value="University of South Florida">University of South Florida</option>
+                    <option value="University of Central Florida">University of Central Florida</option>
+                    <option value="Florida International University">Florida International University</option>
+                    <option value="Florida Atlantic University">Florida Atlantic University</option>
+                    <option value="University of North Florida">University of North Florida</option>
+                    <option value="Florida Gulf Coast University">Florida Gulf Coast University</option>
+                    <option value="Florida Polytechnic University">Florida Polytechnic University</option>
+                    <option value="Florida A&M University">Florida A&M University</option>
+                    <option value="Florida Agricultural and Mechanical University">Florida Agricultural and Mechanical University</option>
+                    <option value="New College of Florida">New College of Florida</option>
+                    <option value="University of West Florida">University of West Florida</option>
+                </select>
             </div>
             <div class="form-group">
-                <input type="text" placeholder="To" required>
+                <select id="toCity" required>
+                    <option value="">Select Destination</option>
+                    <option value="University of Florida">University of Florida</option>
+                    <option value="Florida State University">Florida State University</option>
+                    <option value="University of South Florida">University of South Florida</option>
+                    <option value="University of Central Florida">University of Central Florida</option>
+                    <option value="Florida International University">Florida International University</option>
+                    <option value="Florida Atlantic University">Florida Atlantic University</option>
+                    <option value="University of North Florida">University of North Florida</option>
+                    <option value="Florida Gulf Coast University">Florida Gulf Coast University</option>
+                    <option value="Florida Polytechnic University">Florida Polytechnic University</option>
+                    <option value="Florida A&M University">Florida A&M University</option>
+                    <option value="Florida Agricultural and Mechanical University">Florida Agricultural and Mechanical University</option>
+                    <option value="New College of Florida">New College of Florida</option>
+                    <option value="University of West Florida">University of West Florida</option>
+                </select>
             </div>
+            <button onclick="searchRides()" class="btn search-btn">Search Rides</button>
         </div>
 
         <div class="filter-container">
@@ -49,7 +80,7 @@
             <a href="ride_details.html" style="text-decoration: none; color: inherit;">
                 <div class="card ride-card">
                     <div class="ride-info">
-                        <h3>San Francisco → Los Angeles</h3>
+                        <h3>University of Florida → Florida State University</h3>
                         <div class="ride-meta">
                             <span>🚗 John D.</span>
                             <span>🕒 Today, 2:30 PM</span>
@@ -67,7 +98,7 @@
             <a href="ride_details.html" style="text-decoration: none; color: inherit;">
                 <div class="card ride-card">
                     <div class="ride-info">
-                        <h3>Berkeley → Stanford</h3>
+                        <h3>University of South Florida → University of Central Florida</h3>
                         <div class="ride-meta">
                             <span>🚗 Sarah M.</span>
                             <span>🕒 Tomorrow, 9:00 AM</span>
@@ -85,7 +116,7 @@
             <a href="ride_details.html" style="text-decoration: none; color: inherit;">
                 <div class="card ride-card">
                     <div class="ride-info">
-                        <h3>Davis → Sacramento</h3>
+                        <h3>Florida International University → Florida Atlantic University</h3>
                         <div class="ride-meta">
                             <span>🚗 Mike R.</span>
                             <span>🕒 Today, 5:00 PM</span>
@@ -100,5 +131,63 @@
             </a>
         </div>
     </div>
+    <script>
+        function searchRides() {
+            const fromCity = document.getElementById('fromCity').value;
+            const toCity = document.getElementById('toCity').value;
+            
+            const rideCards = document.querySelectorAll('.ride-card');
+            
+            rideCards.forEach(card => {
+                const routeText = card.querySelector('h3').textContent;
+                const [from, to] = routeText.split('→').map(city => city.trim());
+                
+                const matchesFrom = !fromCity || from === fromCity;
+                const matchesTo = !toCity || to === toCity;
+                
+                const parentLink = card.parentElement;
+                if (matchesFrom && matchesTo) {
+                    parentLink.style.display = 'block';
+                } else {
+                    parentLink.style.display = 'none';
+                }
+            });
+        }
+
+        // Prevent selecting the same university for both departure and destination
+        document.getElementById('fromCity').addEventListener('change', function() {
+            const toSelect = document.getElementById('toCity');
+            const selectedValue = this.value;
+            
+            Array.from(toSelect.options).forEach(option => {
+                if (option.value === selectedValue) {
+                    option.disabled = true;
+                } else {
+                    option.disabled = false;
+                }
+            });
+            
+            if (toSelect.value === selectedValue) {
+                toSelect.value = '';
+            }
+        });
+
+        document.getElementById('toCity').addEventListener('change', function() {
+            const fromSelect = document.getElementById('fromCity');
+            const selectedValue = this.value;
+            
+            Array.from(fromSelect.options).forEach(option => {
+                if (option.value === selectedValue) {
+                    option.disabled = true;
+                } else {
+                    option.disabled = false;
+                }
+            });
+            
+            if (fromSelect.value === selectedValue) {
+                fromSelect.value = '';
+            }
+        });
+    </script>
 </body>
 </html> 
