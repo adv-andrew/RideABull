@@ -16,6 +16,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please provide your university'],
   },
+  profilePicture: {
+    type: String,
+    default: '', // Will store the base64 encoded image or URL
+  },
   passwordHash: {
     type: String,
     required: function() {
@@ -26,6 +30,23 @@ const UserSchema = new mongoose.Schema({
     type: String,
     sparse: true,
     unique: true,
+  },
+  phone: {
+    type: String,
+    default: '',
+  },
+  bio: {
+    type: String,
+    default: '',
+    maxlength: [500, 'Bio cannot be more than 500 characters'],
+  },
+  carInfo: {
+    type: String,
+    default: '',
+  },
+  licensePlate: {
+    type: String,
+    default: '',
   },
   verified: {
     type: Boolean,

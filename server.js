@@ -5,6 +5,7 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const session = require('express-session');
+const multer = require('multer');
 const { passport, generateToken } = require('./routes/auth');
 
 // Import models
@@ -15,6 +16,22 @@ const Trip = require('./models/Trip');
 
 const app = express();
 
+// Configure multer for handling file uploads
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Not an image! Please upload an image.'), false);
+    }
+  },
+});
+
 // Middleware
 app.use(cors({
   origin: '*', // For development only. In production, specify your actual domain
@@ -22,7 +39,6 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 app.use(express.json());
-app.use(express.static('.')); // Serve static files from current directory
 
 // Session middleware
 app.use(session({
@@ -97,6 +113,171 @@ app.post('/api/users/login', async (req, res) => {
     res.json({ user, token });
   } catch (error) {
     res.status(400).json({ message: error.message });
+  }
+});
+
+// Complete profile endpoint
+app.post('/api/users/complete-profile', async (req, res) => {
+  try {
+    const { tempToken, university, password } = req.body;
+    
+    if (!tempToken) {
+      return res.status(400).json({ 
+        error: 'invalid_token_format', 
+        message: 'Invalid token format', 
+        details: 'Temporary token is required' 
+      });
+    }
+    
+    // Verify the temporary token
+    let decoded;
+    try {
+      decoded = jwt.verify(tempToken, process.env.JWT_SECRET);
+    } catch (error) {
+      return res.status(401).json({ 
+        error: 'token_expired', 
+        message: 'Token expired or invalid', 
+        details: error.message 
+      });
+    }
+    
+    // Check if the token is a temporary token
+    if (!decoded.temp) {
+      return res.status(401).json({ 
+        error: 'invalid_token', 
+        message: 'Invalid token type', 
+        details: 'This endpoint requires a temporary token' 
+      });
+    }
+    
+    // Find the user
+    const user = await User.findById(decoded.userId);
+    if (!user) {
+      return res.status(404).json({ 
+        error: 'user_not_found', 
+        message: 'User not found', 
+        details: 'The user associated with this token does not exist' 
+      });
+    }
+    
+    // Update user information
+    if (university) {
+      user.university = university;
+    }
+    
+    if (password) {
+      user.passwordHash = await bcrypt.hash(password, 10);
+    }
+    
+    await user.save();
+    
+    // Generate a new permanent token
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
+    
+    res.json({ 
+      success: true,
+      user, 
+      token 
+    });
+  } catch (error) {
+    console.error('Error completing profile:', error);
+    res.status(500).json({ 
+      error: 'server_error', 
+      message: 'Server error', 
+      details: error.message 
+    });
+  }
+});
+
+// Generate temporary token endpoint
+app.get('/api/users/temp-token', auth, async (req, res) => {
+  try {
+    // Generate a temporary token that expires in 1 hour
+    const tempToken = jwt.sign(
+      { userId: req.user._id, temp: true }, 
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    
+    res.json({ tempToken });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Update profile endpoint
+app.put('/api/users/profile', auth, upload.single('profilePicture'), async (req, res) => {
+  try {
+    const { 
+      name, 
+      university, 
+      phone, 
+      bio, 
+      carInfo, 
+      licensePlate,
+      newPassword 
+    } = req.body;
+
+    const updates = {};
+    
+    if (name) updates.name = name;
+    if (university) updates.university = university;
+    if (phone) updates.phone = phone;
+    if (bio) updates.bio = bio;
+    if (carInfo) updates.carInfo = carInfo;
+    if (licensePlate) updates.licensePlate = licensePlate;
+    
+    // Handle profile picture upload
+    if (req.file) {
+      const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      updates.profilePicture = base64Image;
+    }
+
+    // Update password if provided
+    if (newPassword) {
+      updates.passwordHash = await bcrypt.hash(newPassword, 10);
+    }
+
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
+
+    res.json({ user });
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// Get user profile data
+app.get('/api/users/me', auth, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ 
+        error: 'user_not_found', 
+        message: 'User not found' 
+      });
+    }
+    res.json({
+      name: user.name,
+      email: user.email,
+      university: user.university,
+      phone: user.phone,
+      bio: user.bio,
+      carInfo: user.carInfo,
+      licensePlate: user.licensePlate,
+      createdAt: user.createdAt,
+      hasPassword: !!user.passwordHash
+    });
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    res.status(500).json({ 
+      error: 'server_error', 
+      message: 'Server error', 
+      details: error.message 
+    });
   }
 });
 
@@ -252,6 +433,9 @@ app.get('/api/auth/google/callback',
     res.redirect(`/login.html?token=${token}`);
   }
 );
+
+// Serve static files from current directory (should be after API routes)
+app.use(express.static('.'));
 
 // Start server
 const PORT = process.env.PORT || 3000;

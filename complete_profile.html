@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Profile - Ride A Bull</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .error-message {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .success-message {
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .form-group .error {
+            border-color: #dc3545;
+        }
+
+        .form-group .error-text {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 4px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="#" class="navbar-brand">
+                <i class="fas fa-car-side text-primary"></i> Ride A Bull
+            </a>
+        </div>
+    </nav>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>Complete Your Profile</h2>
+                <p>Please provide your university information and set a password</p>
+            </div>
+            
+            <div class="auth-body">
+                <div id="errorMessage" class="error-message"></div>
+                <div id="successMessage" class="success-message"></div>
+                <form id="completeProfileForm">
+                    <div class="form-group">
+                        <label for="university" class="form-label">University</label>
+                        <select id="university" class="form-control" required>
+                            <option value="">Select Your University</option>
+                            <option value="University of Florida">University of Florida</option>
+                            <option value="Florida State University">Florida State University</option>
+                            <option value="University of South Florida">University of South Florida</option>
+                            <option value="University of Central Florida">University of Central Florida</option>
+                            <option value="Florida International University">Florida International University</option>
+                            <option value="Florida Atlantic University">Florida Atlantic University</option>
+                            <option value="University of North Florida">University of North Florida</option>
+                            <option value="Florida Gulf Coast University">Florida Gulf Coast University</option>
+                            <option value="Florida Polytechnic University">Florida Polytechnic University</option>
+                            <option value="Florida A&M University">Florida A&M University</option>
+                            <option value="New College of Florida">New College of Florida</option>
+                            <option value="University of West Florida">University of West Florida</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="password" class="form-label">Set Password</label>
+                        <input type="password" id="password" class="form-control" 
+                               placeholder="Choose a secure password" required
+                               minlength="8">
+                        <small class="form-text text-muted">
+                            Password must be at least 8 characters long
+                        </small>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <input type="password" id="confirmPassword" class="form-control" 
+                               placeholder="Confirm your password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Complete Profile</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check if we have the temporary token from either Google OAuth or profile redirect
+        const urlParams = new URLSearchParams(window.location.search);
+        const tempToken = urlParams.get('temp_token');
+        const message = urlParams.get('message');
+        
+        if (message) {
+            document.querySelector('.auth-header p').textContent = decodeURIComponent(message);
+        }
+
+        // Show error message with details
+        function showError(error, message, details) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.style.display = 'block';
+            errorDiv.innerHTML = `<strong>${message}</strong>${details ? `<br>${details}` : ''}`;
+            
+            // Hide success message if shown
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.style.display = 'block';
+            successDiv.textContent = message;
+            
+            // Hide error message if shown
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // Clear all messages
+        function clearMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        // Validate form fields
+        function validateForm() {
+            clearMessages();
+            
+            const university = document.getElementById('university').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!university) {
+                showError('missing_university', 'University is required', 'Please select your university');
+                return false;
+            }
+            
+            if (!password) {
+                showError('missing_password', 'Password is required', 'Please set a password');
+                return false;
+            }
+            
+            if (password.length < 8) {
+                showError('password_too_short', 'Password is too short', 'Password must be at least 8 characters long');
+                return false;
+            }
+            
+            if (password !== confirmPassword) {
+                showError('passwords_dont_match', 'Passwords do not match', 'Please make sure both passwords are the same');
+                return false;
+            }
+            
+            return true;
+        }
+
+        document.getElementById('completeProfileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            if (!validateForm()) {
+                return;
+            }
+
+            const password = document.getElementById('password').value;
+            const university = document.getElementById('university').value;
+
+            try {
+                console.log('Submitting profile completion with temp token:', tempToken);
+                const response = await fetch('http://localhost:3000/api/users/complete-profile', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        tempToken,
+                        university,
+                        password
+                    })
+                });
+
+                const data = await response.json();
+                console.log('Server response:', data);
+
+                if (!response.ok) {
+                    console.error('Server error response:', data);
+                    
+                    // Handle specific error cases
+                    switch (data.error) {
+                        case 'token_expired':
+                            showError(data.error, data.message, 'Please log in again to get a new token');
+                            setTimeout(() => {
+                                window.location.href = 'login.html';
+                            }, 3000);
+                            break;
+                        case 'invalid_token':
+                        case 'invalid_token_format':
+                            showError(data.error, data.message, data.details);
+                            setTimeout(() => {
+                                window.location.href = 'login.html';
+                            }, 3000);
+                            break;
+                        default:
+                            showError(data.error, data.message, data.details);
+                    }
+                    return;
+                }
+
+                // Check if we have a token and user data in the response
+                if (data.token && data.user) {
+                    console.log('Profile completion successful');
+                    showSuccess('Profile completed successfully');
+                    
+                    // Store the permanent token
+                    localStorage.setItem('token', data.token);
+                    
+                    // Clear any existing temporary token from URL
+                    window.history.replaceState({}, document.title, 'profile.html');
+                    
+                    // Redirect to profile page after a short delay
+                    setTimeout(() => {
+                        window.location.href = 'profile.html';
+                    }, 1500);
+                } else {
+                    console.error('Unexpected server response:', data);
+                    showError('unexpected_response', 'Unexpected server response', 'Please try again or contact support');
+                }
+            } catch (error) {
+                console.error('Error completing profile:', error);
+                showError('network_error', 'Failed to complete profile', 'Please check your internet connection and try again');
+            }
+        });
+    </script>
+</body>
+</html> 

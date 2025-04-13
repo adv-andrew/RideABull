@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Profile - Ride A Bull</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .error-message {
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .success-message {
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 15px;
+            display: none;
+        }
+
+        .profile-picture-container {
+            margin-bottom: 20px;
+        }
+        
+        .profile-preview {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-bottom: 15px;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #dee2e6;
+        }
+        
+        .no-image-placeholder {
+            font-size: 80px;
+            color: #dee2e6;
+        }
+        
+        .profile-picture-actions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        
+        #camera {
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="profile.html" class="navbar-brand">
+                <i class="fas fa-car-side text-primary"></i> Ride A Bull
+            </a>
+            <div class="navbar-nav">
+                <div class="nav-item">
+                    <a href="rides.html" class="nav-link">Rides</a>
+                </div>
+                <div class="nav-item">
+                    <a href="profile.html" class="nav-link active">Profile</a>
+                </div>
+                <div class="nav-item">
+                    <button onclick="logout()" class="nav-link btn-link">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="card p-4">
+            <div class="card-header">
+                <h2><i class="fas fa-user-edit text-primary"></i> Update Profile</h2>
+                <p class="text-muted">Update your profile information</p>
+            </div>
+            
+            <div class="card-body">
+                <div id="errorMessage" class="error-message"></div>
+                <div id="successMessage" class="success-message"></div>
+                
+                <form id="updateProfileForm">
+                    <div class="form-group">
+                        <label for="name" class="form-label">Full Name</label>
+                        <input type="text" id="name" class="form-control" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" id="email" class="form-control" required readonly>
+                        <small class="form-text text-muted">Email cannot be changed</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="university" class="form-label">University</label>
+                        <select id="university" class="form-control" required>
+                            <option value="">Select Your University</option>
+                            <option value="University of Florida">University of Florida</option>
+                            <option value="Florida State University">Florida State University</option>
+                            <option value="University of South Florida">University of South Florida</option>
+                            <option value="University of Central Florida">University of Central Florida</option>
+                            <option value="Florida International University">Florida International University</option>
+                            <option value="Florida Atlantic University">Florida Atlantic University</option>
+                            <option value="University of North Florida">University of North Florida</option>
+                            <option value="Florida Gulf Coast University">Florida Gulf Coast University</option>
+                            <option value="Florida Polytechnic University">Florida Polytechnic University</option>
+                            <option value="Florida A&M University">Florida A&M University</option>
+                            <option value="New College of Florida">New College of Florida</option>
+                            <option value="University of West Florida">University of West Florida</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" id="phone" class="form-control" placeholder="(123) 456-7890">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="bio" class="form-label">Bio</label>
+                        <textarea id="bio" class="form-control" rows="3" placeholder="Tell us about yourself"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="carInfo" class="form-label">Car Information</label>
+                        <input type="text" id="carInfo" class="form-control" placeholder="Make, Model, Year, Color">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="licensePlate" class="form-label">License Plate</label>
+                        <input type="text" id="licensePlate" class="form-control" placeholder="Your license plate number">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Profile Picture</label>
+                        <div class="profile-picture-container">
+                            <div id="profilePreview" class="profile-preview">
+                                <img id="profileImage" src="" alt="Profile Preview" style="display: none; max-width: 200px; max-height: 200px; border-radius: 50%;">
+                                <div id="noImagePlaceholder" class="no-image-placeholder">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            </div>
+                            <div class="profile-picture-actions">
+                                <button type="button" id="takePhotoBtn" class="btn btn-outline-primary">
+                                    <i class="fas fa-camera"></i> Take Photo
+                                </button>
+                                <button type="button" id="uploadPhotoBtn" class="btn btn-outline-secondary">
+                                    <i class="fas fa-upload"></i> Upload Photo
+                                </button>
+                                <input type="file" id="photoInput" accept="image/*" style="display: none;">
+                            </div>
+                            <video id="camera" style="display: none; width: 100%; max-width: 400px;"></video>
+                            <canvas id="canvas" style="display: none;"></canvas>
+                        </div>
+                    </div>
+
+                    <div id="initialPasswordSection" style="display: none;">
+                        <div class="form-group">
+                            <label for="newPassword" class="form-label">Set Password</label>
+                            <input type="password" id="newPassword" class="form-control" placeholder="Choose a password">
+                            <small class="form-text text-muted">Set your initial password</small>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                        <a href="profile.html" class="btn btn-outline-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = 'login.html';
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            const successDiv = document.getElementById('successMessage');
+            successDiv.textContent = message;
+            successDiv.style.display = 'block';
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        let hasPassword = false;
+        let stream = null;
+
+        // Fetch user data
+        async function fetchUserData() {
+            try {
+                const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+                const response = await fetch('http://localhost:3000/api/users/me', {
+                    headers: {
+                        'Authorization': authToken
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user data');
+                }
+
+                const userData = await response.json();
+                
+                // Populate form fields
+                document.getElementById('name').value = userData.name || '';
+                document.getElementById('email').value = userData.email || '';
+                document.getElementById('university').value = userData.university || '';
+                document.getElementById('phone').value = userData.phone || '';
+                document.getElementById('bio').value = userData.bio || '';
+                document.getElementById('carInfo').value = userData.carInfo || '';
+                document.getElementById('licensePlate').value = userData.licensePlate || '';
+                
+                // Show password field only if user doesn't have a password set
+                hasPassword = userData.hasPassword;
+                document.getElementById('initialPasswordSection').style.display = hasPassword ? 'none' : 'block';
+                
+                // Load existing profile picture if any
+                if (userData.profilePicture) {
+                    document.getElementById('profileImage').src = userData.profilePicture;
+                    document.getElementById('profileImage').style.display = 'block';
+                    document.getElementById('noImagePlaceholder').style.display = 'none';
+                }
+                
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+                showError('Failed to load profile data. Please try again.');
+            }
+        }
+
+        // Initialize profile picture functionality
+        async function initializeProfilePicture() {
+            const profileImage = document.getElementById('profileImage');
+            const noImagePlaceholder = document.getElementById('noImagePlaceholder');
+            const takePhotoBtn = document.getElementById('takePhotoBtn');
+            const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+            const photoInput = document.getElementById('photoInput');
+            const camera = document.getElementById('camera');
+            const canvas = document.getElementById('canvas');
+
+            // Load existing profile picture if any
+            const userData = await fetchUserData();
+            if (userData && userData.profilePicture) {
+                profileImage.src = userData.profilePicture;
+                profileImage.style.display = 'block';
+                noImagePlaceholder.style.display = 'none';
+            }
+
+            // Handle photo upload
+            uploadPhotoBtn.addEventListener('click', () => {
+                photoInput.click();
+            });
+
+            photoInput.addEventListener('change', (e) => {
+                if (e.target.files && e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        profileImage.src = event.target.result;
+                        profileImage.style.display = 'block';
+                        noImagePlaceholder.style.display = 'none';
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+
+            // Handle camera capture
+            takePhotoBtn.addEventListener('click', async () => {
+                if (camera.style.display === 'none') {
+                    try {
+                        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                        camera.srcObject = stream;
+                        camera.style.display = 'block';
+                        takePhotoBtn.textContent = 'Take Photo';
+                    } catch (err) {
+                        console.error('Error accessing camera:', err);
+                        showError('Unable to access camera. Please check your camera permissions.');
+                    }
+                } else {
+                    // Capture photo
+                    canvas.width = camera.videoWidth;
+                    canvas.height = camera.videoHeight;
+                    canvas.getContext('2d').drawImage(camera, 0, 0);
+                    
+                    // Convert to base64
+                    const imageData = canvas.toDataURL('image/jpeg');
+                    profileImage.src = imageData;
+                    profileImage.style.display = 'block';
+                    noImagePlaceholder.style.display = 'none';
+                    
+                    // Stop camera stream
+                    if (stream) {
+                        stream.getTracks().forEach(track => track.stop());
+                    }
+                    camera.style.display = 'none';
+                    takePhotoBtn.textContent = 'Take Photo';
+                }
+            });
+        }
+
+        // Handle form submission
+        document.getElementById('updateProfileForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('name', document.getElementById('name').value);
+            formData.append('university', document.getElementById('university').value);
+            formData.append('phone', document.getElementById('phone').value);
+            formData.append('bio', document.getElementById('bio').value);
+            formData.append('carInfo', document.getElementById('carInfo').value);
+            formData.append('licensePlate', document.getElementById('licensePlate').value);
+            
+            // Add profile picture if exists
+            const profileImage = document.getElementById('profileImage');
+            if (profileImage.src && profileImage.src !== '') {
+                // Convert base64 to blob
+                const response = await fetch(profileImage.src);
+                const blob = await response.blob();
+                formData.append('profilePicture', blob, 'profile.jpg');
+            }
+            
+            try {
+                const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+                const response = await fetch('http://localhost:3000/api/users/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': authToken
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to update profile');
+                }
+
+                const data = await response.json();
+                showSuccess('Profile updated successfully!');
+                
+                // Redirect to profile page after a short delay
+                setTimeout(() => {
+                    window.location.href = 'profile.html';
+                }, 1500);
+            } catch (error) {
+                console.error('Error updating profile:', error);
+                showError('Failed to update profile. Please try again.');
+            }
+        });
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        // Initialize page
+        fetchUserData();
+        initializeProfilePicture();
+    </script>
+</body>
+</html> 
