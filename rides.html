@@ -5,74 +5,120 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Available Rides - Ride A Bull</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <nav class="nav">
-        <a href="rides.html" class="nav-logo">Ride A Bull</a>
-        <a href="post_ride.html" class="btn">Post a Ride</a>
+    <nav class="navbar">
+        <div class="container">
+            <a href="rides.html" class="navbar-brand">
+                <i class="fas fa-car-side text-primary"></i> Ride A Bull
+            </a>
+            <div class="navbar-nav">
+                <div class="nav-item">
+                    <a href="#" class="nav-link">My Rides</a>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link">Profile</a>
+                </div>
+                <div class="navbar-actions">
+                    <a href="post_ride.html" class="btn btn-cta">Post a Ride</a>
+                </div>
+            </div>
+        </div>
     </nav>
 
     <div class="container">
         <div class="search-container">
-            <div class="form-group">
-                <select id="fromCity" required>
-                    <option value="">Select Departure</option>
-                    <option value="University of Florida">University of Florida</option>
-                    <option value="Florida State University">Florida State University</option>
-                    <option value="University of South Florida">University of South Florida</option>
-                    <option value="University of Central Florida">University of Central Florida</option>
-                    <option value="Florida International University">Florida International University</option>
-                    <option value="Florida Atlantic University">Florida Atlantic University</option>
-                    <option value="University of North Florida">University of North Florida</option>
-                    <option value="Florida Gulf Coast University">Florida Gulf Coast University</option>
-                    <option value="Florida Polytechnic University">Florida Polytechnic University</option>
-                    <option value="Florida A&M University">Florida A&M University</option>
-                    <option value="Florida Agricultural and Mechanical University">Florida Agricultural and Mechanical University</option>
-                    <option value="New College of Florida">New College of Florida</option>
-                    <option value="University of West Florida">University of West Florida</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <select id="toCity" required>
-                    <option value="">Select Destination</option>
-                    <option value="University of Florida">University of Florida</option>
-                    <option value="Florida State University">Florida State University</option>
-                    <option value="University of South Florida">University of South Florida</option>
-                    <option value="University of Central Florida">University of Central Florida</option>
-                    <option value="Florida International University">Florida International University</option>
-                    <option value="Florida Atlantic University">Florida Atlantic University</option>
-                    <option value="University of North Florida">University of North Florida</option>
-                    <option value="Florida Gulf Coast University">Florida Gulf Coast University</option>
-                    <option value="Florida Polytechnic University">Florida Polytechnic University</option>
-                    <option value="Florida A&M University">Florida A&M University</option>
-                    <option value="Florida Agricultural and Mechanical University">Florida Agricultural and Mechanical University</option>
-                    <option value="New College of Florida">New College of Florida</option>
-                    <option value="University of West Florida">University of West Florida</option>
-                </select>
-            </div>
-            <button onclick="searchRides()" class="btn search-btn">Search Rides</button>
+            <h2 class="mb-4">Find Your Ride</h2>
+            <form class="search-form">
+                <div class="form-group">
+                    <label for="fromCity" class="form-label">From</label>
+                    <select id="fromCity" class="form-control" required>
+                        <option value="">Select Departure</option>
+                        <option value="University of Florida">University of Florida</option>
+                        <option value="Florida State University">Florida State University</option>
+                        <option value="University of South Florida">University of South Florida</option>
+                        <option value="University of Central Florida">University of Central Florida</option>
+                        <option value="Florida International University">Florida International University</option>
+                        <option value="Florida Atlantic University">Florida Atlantic University</option>
+                        <option value="University of North Florida">University of North Florida</option>
+                        <option value="Florida Gulf Coast University">Florida Gulf Coast University</option>
+                        <option value="Florida Polytechnic University">Florida Polytechnic University</option>
+                        <option value="Florida A&M University">Florida A&M University</option>
+                        <option value="New College of Florida">New College of Florida</option>
+                        <option value="University of West Florida">University of West Florida</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="toCity" class="form-label">To</label>
+                    <select id="toCity" class="form-control" required>
+                        <option value="">Select Destination</option>
+                        <option value="University of Florida">University of Florida</option>
+                        <option value="Florida State University">Florida State University</option>
+                        <option value="University of South Florida">University of South Florida</option>
+                        <option value="University of Central Florida">University of Central Florida</option>
+                        <option value="Florida International University">Florida International University</option>
+                        <option value="Florida Atlantic University">Florida Atlantic University</option>
+                        <option value="University of North Florida">University of North Florida</option>
+                        <option value="Florida Gulf Coast University">Florida Gulf Coast University</option>
+                        <option value="Florida Polytechnic University">Florida Polytechnic University</option>
+                        <option value="Florida A&M University">Florida A&M University</option>
+                        <option value="New College of Florida">New College of Florida</option>
+                        <option value="University of West Florida">University of West Florida</option>
+                    </select>
+                </div>
+                <button type="button" onclick="searchRides()" class="btn btn-primary search-btn">
+                    <i class="fas fa-search"></i> Search
+                </button>
+            </form>
         </div>
 
         <div class="filter-container">
-            <select>
-                <option value="">Date</option>
-                <option value="today">Today</option>
-                <option value="tomorrow">Tomorrow</option>
-                <option value="week">This Week</option>
-            </select>
-            <select>
-                <option value="">Seats Available</option>
-                <option value="1">1 Seat</option>
-                <option value="2">2 Seats</option>
-                <option value="3">3+ Seats</option>
-            </select>
-            <select>
-                <option value="">Price Range</option>
-                <option value="low">$0 - $20</option>
-                <option value="medium">$21 - $40</option>
-                <option value="high">$41+</option>
-            </select>
+            <div class="filter-item">
+                <button class="filter-btn">
+                    <i class="fas fa-calendar-alt"></i> Date
+                </button>
+                <div class="filter-dropdown">
+                    <button class="filter-dropdown-item">Any Date</button>
+                    <button class="filter-dropdown-item">Today</button>
+                    <button class="filter-dropdown-item">Tomorrow</button>
+                    <button class="filter-dropdown-item">This Week</button>
+                    <button class="filter-dropdown-item">Next Week</button>
+                </div>
+            </div>
+            <div class="filter-item">
+                <button class="filter-btn">
+                    <i class="fas fa-users"></i> Seats
+                </button>
+                <div class="filter-dropdown">
+                    <button class="filter-dropdown-item">Any Number</button>
+                    <button class="filter-dropdown-item">1 Seat</button>
+                    <button class="filter-dropdown-item">2 Seats</button>
+                    <button class="filter-dropdown-item">3+ Seats</button>
+                </div>
+            </div>
+            <div class="filter-item">
+                <button class="filter-btn">
+                    <i class="fas fa-dollar-sign"></i> Price
+                </button>
+                <div class="filter-dropdown">
+                    <button class="filter-dropdown-item">Any Price</button>
+                    <button class="filter-dropdown-item">$0 - $20</button>
+                    <button class="filter-dropdown-item">$21 - $40</button>
+                    <button class="filter-dropdown-item">$41+</button>
+                </div>
+            </div>
+            <div class="filter-item">
+                <button class="filter-btn">
+                    <i class="fas fa-leaf"></i> Eco-Friendly
+                </button>
+                <div class="filter-dropdown">
+                    <button class="filter-dropdown-item">Any Vehicle</button>
+                    <button class="filter-dropdown-item">Electric</button>
+                    <button class="filter-dropdown-item">Hybrid</button>
+                </div>
+            </div>
         </div>
 
         <div class="rides-list" id="ridesList">
@@ -81,6 +127,102 @@
     </div>
 
     <script>
+        // Initialize filter dropdowns
+        document.addEventListener('DOMContentLoaded', () => {
+            // Setup filter dropdowns
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            filterButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const dropdown = this.nextElementSibling;
+                    dropdown.classList.toggle('show');
+                });
+            });
+
+            // Close dropdowns when clicking outside
+            document.addEventListener('click', function(event) {
+                if (!event.target.matches('.filter-btn')) {
+                    const dropdowns = document.querySelectorAll('.filter-dropdown');
+                    dropdowns.forEach(dropdown => {
+                        if (dropdown.classList.contains('show')) {
+                            dropdown.classList.remove('show');
+                        }
+                    });
+                }
+            });
+
+            // Setup filter dropdown items
+            const filterItems = document.querySelectorAll('.filter-dropdown-item');
+            filterItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const dropdown = this.parentElement;
+                    const filterBtn = dropdown.previousElementSibling;
+
+                    // Remove active class from siblings
+                    dropdown.querySelectorAll('.filter-dropdown-item').forEach(sibling => {
+                        sibling.classList.remove('active');
+                    });
+
+                    // Add active class to clicked item
+                    this.classList.add('active');
+
+                    // Update button text
+                    const icon = filterBtn.querySelector('i').outerHTML;
+                    filterBtn.innerHTML = icon + ' ' + this.textContent;
+
+                    // Close dropdown
+                    dropdown.classList.remove('show');
+
+                    // Apply filters
+                    applyFilters();
+                });
+            });
+
+            // Prevent selecting the same university for both departure and destination
+            document.getElementById('fromCity').addEventListener('change', function() {
+                const toSelect = document.getElementById('toCity');
+                const selectedValue = this.value;
+
+                Array.from(toSelect.options).forEach(option => {
+                    if (option.value === selectedValue) {
+                        option.disabled = true;
+                    } else {
+                        option.disabled = false;
+                    }
+                });
+
+                if (toSelect.value === selectedValue) {
+                    toSelect.value = '';
+                }
+            });
+
+            document.getElementById('toCity').addEventListener('change', function() {
+                const fromSelect = document.getElementById('fromCity');
+                const selectedValue = this.value;
+
+                Array.from(fromSelect.options).forEach(option => {
+                    if (option.value === selectedValue) {
+                        option.disabled = true;
+                    } else {
+                        option.disabled = false;
+                    }
+                });
+
+                if (fromSelect.value === selectedValue) {
+                    fromSelect.value = '';
+                }
+            });
+
+            // Check if user is logged in
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Load rides when the page loads
+            fetchRides();
+        });
+
         // Fetch and display rides
         async function fetchRides() {
             try {
@@ -89,26 +231,85 @@
                 displayRides(rides);
             } catch (error) {
                 console.error('Error fetching rides:', error);
-                document.getElementById('ridesList').innerHTML = '<p>Error loading rides. Please try again later.</p>';
+                document.getElementById('ridesList').innerHTML = `
+                    <div class="card p-5 text-center">
+                        <div class="card-body">
+                            <i class="fas fa-exclamation-circle text-danger" style="font-size: 3rem;"></i>
+                            <h3 class="mt-3">Error Loading Rides</h3>
+                            <p>We couldn't load the available rides. Please try again later.</p>
+                            <button onclick="fetchRides()" class="btn btn-primary mt-3">
+                                <i class="fas fa-sync-alt"></i> Try Again
+                            </button>
+                        </div>
+                    </div>
+                `;
             }
         }
 
         function displayRides(rides) {
             const ridesList = document.getElementById('ridesList');
-            ridesList.innerHTML = rides.map(ride => `
-                <a href="ride_details.html?id=${ride._id}" style="text-decoration: none; color: inherit;">
-                    <div class="card ride-card">
-                        <div class="ride-info">
-                            <h3>${ride.origin.name} → ${ride.destination.name}</h3>
-                            <div class="ride-meta">
-                                <span>🕒 ${formatDate(ride.startTime)}</span>
-                                <span>💺 ${ride.availableSeats} seats left</span>
-                                <span>💰 $${ride.pricePerSeat}/seat</span>
-                            </div>
-                            ${ride.preferences && ride.preferences.length > 0 ? `<p class="preferences">${ride.preferences.join(', ')}</p>` : ''}
+
+            if (rides.length === 0) {
+                ridesList.innerHTML = `
+                    <div class="card p-5 text-center">
+                        <div class="card-body">
+                            <i class="fas fa-car-side text-muted" style="font-size: 3rem;"></i>
+                            <h3 class="mt-3">No Rides Available</h3>
+                            <p>There are no rides matching your criteria at the moment.</p>
+                            <a href="post_ride.html" class="btn btn-cta mt-3">
+                                <i class="fas fa-plus"></i> Post a Ride
+                            </a>
                         </div>
-                        <div class="eco-stats">
-                            🌱 Saves ${Math.floor(Math.random() * 20 + 10)} lbs CO₂
+                    </div>
+                `;
+                return;
+            }
+
+            ridesList.innerHTML = rides.map(ride => `
+                <a href="ride_details.html?id=${ride._id}" class="card-link">
+                    <div class="card card-hover ride-card">
+                        <div class="ride-card-body">
+                            <div class="ride-card-header">
+                                <div class="ride-route">
+                                    ${ride.origin.name} <span class="ride-route-arrow"><i class="fas fa-arrow-right"></i></span> ${ride.destination.name}
+                                </div>
+                            </div>
+
+                            <div class="ride-meta">
+                                <div class="ride-meta-item">
+                                    <i class="fas fa-calendar-alt ride-meta-icon"></i>
+                                    <span>${formatDate(ride.startTime)}</span>
+                                </div>
+                                <div class="ride-meta-item">
+                                    <i class="fas fa-user-friends ride-meta-icon"></i>
+                                    <span>${ride.availableSeats} seat${ride.availableSeats !== 1 ? 's' : ''} left</span>
+                                </div>
+                                <div class="ride-meta-item">
+                                    <i class="fas fa-dollar-sign ride-meta-icon"></i>
+                                    <span>$${ride.pricePerSeat}/seat</span>
+                                </div>
+                                <div class="ride-meta-item">
+                                    <i class="fas fa-car ride-meta-icon"></i>
+                                    <span>${ride.vehicle?.makeModel || 'Vehicle'} (${ride.vehicle?.year || 'N/A'})</span>
+                                </div>
+                            </div>
+
+                            ${ride.preferences && ride.preferences.length > 0 ? `
+                                <div class="ride-preferences">
+                                    ${ride.preferences.map(pref => `
+                                        <span class="ride-preference-tag">
+                                            <i class="fas fa-check ride-preference-icon"></i> ${pref}
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            ` : ''}
+
+                            <div class="ride-eco-stats">
+                                <i class="fas fa-leaf"></i> Saves ${Math.floor(Math.random() * 20 + 10)} lbs CO₂
+                                <div class="ride-eco-stats-tooltip">
+                                    This is the estimated amount of carbon emissions saved by carpooling instead of driving separately.
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </a>
@@ -133,16 +334,16 @@
         function searchRides() {
             const fromCity = document.getElementById('fromCity').value;
             const toCity = document.getElementById('toCity').value;
-            
+
             const rideCards = document.querySelectorAll('.ride-card');
-            
+
             rideCards.forEach(card => {
-                const routeText = card.querySelector('h3').textContent;
+                const routeText = card.querySelector('.ride-route').textContent;
                 const [from, to] = routeText.split('→').map(city => city.trim());
-                
+
                 const matchesFrom = !fromCity || from === fromCity;
                 const matchesTo = !toCity || to === toCity;
-                
+
                 const parentLink = card.parentElement;
                 if (matchesFrom && matchesTo) {
                     parentLink.style.display = 'block';
@@ -152,43 +353,17 @@
             });
         }
 
-        // Prevent selecting the same university for both departure and destination
-        document.getElementById('fromCity').addEventListener('change', function() {
-            const toSelect = document.getElementById('toCity');
-            const selectedValue = this.value;
-            
-            Array.from(toSelect.options).forEach(option => {
-                if (option.value === selectedValue) {
-                    option.disabled = true;
-                } else {
-                    option.disabled = false;
-                }
+        function applyFilters() {
+            // Get all active filters
+            const activeFilters = {};
+            document.querySelectorAll('.filter-dropdown-item.active').forEach(item => {
+                const filterType = item.closest('.filter-item').querySelector('.filter-btn').textContent.trim().split(' ')[1];
+                activeFilters[filterType.toLowerCase()] = item.textContent.trim();
             });
-            
-            if (toSelect.value === selectedValue) {
-                toSelect.value = '';
-            }
-        });
 
-        document.getElementById('toCity').addEventListener('change', function() {
-            const fromSelect = document.getElementById('fromCity');
-            const selectedValue = this.value;
-            
-            Array.from(fromSelect.options).forEach(option => {
-                if (option.value === selectedValue) {
-                    option.disabled = true;
-                } else {
-                    option.disabled = false;
-                }
-            });
-            
-            if (fromSelect.value === selectedValue) {
-                fromSelect.value = '';
-            }
-        });
-
-        // Load rides when the page loads
-        fetchRides();
+            console.log('Active filters:', activeFilters);
+            // TODO: Implement actual filtering logic based on activeFilters
+        }
     </script>
 </body>
-</html> 
+</html>

@@ -5,58 +5,89 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Post a Ride - Ride A Bull</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="env-loader.min.js"></script>
 </head>
 <body>
-    <nav class="nav">
-        <a href="rides.html" class="nav-logo">Ride A Bull</a>
+    <nav class="navbar">
+        <div class="container">
+            <a href="rides.html" class="navbar-brand">
+                <i class="fas fa-car-side text-primary"></i> Ride A Bull
+            </a>
+            <div class="navbar-nav">
+                <div class="nav-item">
+                    <a href="#" class="nav-link">My Rides</a>
+                </div>
+                <div class="nav-item">
+                    <a href="#" class="nav-link">Profile</a>
+                </div>
+            </div>
+        </div>
     </nav>
 
     <div class="container">
-        <div style="max-width: 600px; margin: 2rem auto;">
-            <h1>Post a Ride</h1>
-            <p style="color: #666; margin-bottom: 2rem;">
-                Share your journey and help fellow students get where they need to go.
-            </p>
-
-            <div class="card">
+        <div class="card mt-5 mb-5" style="max-width: 800px; margin: 0 auto;">
+            <div class="card-header">
+                <h2 class="card-title">Post a Ride</h2>
+                <p class="card-subtitle">Share your journey and help fellow students get where they need to go.</p>
+            </div>
+            <div class="card-body">
                 <form id="rideForm">
                     <div class="form-group">
-                        <label for="origin">From</label>
-                        <select id="origin" required>
+                        <label for="origin" class="form-label">From</label>
+                        <select id="origin" class="form-control" required>
                             <option value="">Select Departure Location</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="destination">To</label>
-                        <select id="destination" required>
+                        <label for="destination" class="form-label">To</label>
+                        <select id="destination" class="form-control" required>
                             <option value="">Select Destination</option>
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="startTime">Departure Time</label>
-                        <input type="datetime-local" id="startTime" required>
+                        <label for="startTime" class="form-label">Departure Time</label>
+                        <input type="datetime-local" id="startTime" class="form-control" required>
                     </div>
                     <div class="form-group">
-                        <label for="totalSeats">Available Seats</label>
-                        <input type="number" id="totalSeats" placeholder="Total Number of Seats" min="1" max="6" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="pricePerSeat">Price per Seat ($)</label>
-                        <input type="number" id="pricePerSeat" placeholder="Price per Seat" min="0" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Vehicle Information</label>
-                        <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
-                            <div>
-                                <input type="text" id="vehicleMakeModel" placeholder="Make and Model (e.g., Honda Civic)" required>
+                        <label for="totalSeats" class="form-label">Available Seats</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-users"></i></span>
                             </div>
-                            <div>
-                                <input type="number" id="vehicleYear" placeholder="Year" min="1990" max="2024" required>
+                            <input type="number" id="totalSeats" class="form-control" placeholder="Total Number of Seats" min="1" max="6" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="pricePerSeat" class="form-label">Price per Seat</label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <span class="input-group-text"><i class="fas fa-dollar-sign"></i></span>
                             </div>
-                            <div>
-                                <select id="vehicleType" required>
-                                    <option value="">Type</option>
+                            <input type="number" id="pricePerSeat" class="form-control" placeholder="Price per Seat" min="0" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Vehicle Information</label>
+                        <div class="d-flex gap-4">
+                            <div style="flex: 2">
+                                <label for="vehicleMakeModel" class="form-label fs-sm">Make & Model</label>
+                                <div class="input-group">
+                                    <div class="input-group-prepend">
+                                        <span class="input-group-text"><i class="fas fa-car"></i></span>
+                                    </div>
+                                    <input type="text" id="vehicleMakeModel" class="form-control" placeholder="Honda Civic" required>
+                                </div>
+                            </div>
+                            <div style="flex: 1">
+                                <label for="vehicleYear" class="form-label fs-sm">Year</label>
+                                <input type="number" id="vehicleYear" class="form-control" placeholder="2023" min="1990" max="2024" required>
+                            </div>
+                            <div style="flex: 1">
+                                <label for="vehicleType" class="form-label fs-sm">Type</label>
+                                <select id="vehicleType" class="form-control" required>
+                                    <option value="">Select</option>
                                     <option value="Sedan">Sedan</option>
                                     <option value="SUV">SUV</option>
                                     <option value="Truck">Truck</option>
@@ -69,10 +100,14 @@
                         </div>
                     </div>
                     <div class="form-group">
-                        <label for="preferences">Preferences</label>
-                        <textarea id="preferences" placeholder="Preferences (e.g., no loud music, pets allowed)" rows="3" style="width: 100%; padding: 12px; border: 2px solid #E2E8F0; border-radius: var(--border-radius);"></textarea>
+                        <label for="preferences" class="form-label">Preferences</label>
+                        <textarea id="preferences" class="form-control" placeholder="Preferences (e.g., no loud music, pets allowed)" rows="3"></textarea>
+                        <div class="form-text">Let passengers know about any preferences you have for the ride.</div>
                     </div>
-                    <button type="submit" class="btn" style="width: 100%;">Post Ride</button>
+                    <div class="d-flex justify-content-between mt-5">
+                        <a href="rides.html" class="btn btn-outline">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Post Ride</button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -148,7 +183,7 @@
 
         document.getElementById('rideForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const originCollege = JSON.parse(document.getElementById('origin').value);
             const destCollege = JSON.parse(document.getElementById('destination').value);
 
@@ -202,4 +237,4 @@
         });
     </script>
 </body>
-</html> 
+</html>

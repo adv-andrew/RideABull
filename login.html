@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Ride A Bull</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="navbar-brand">
+                <i class="fas fa-car-side text-primary"></i> Ride A Bull
+            </a>
+            <div class="navbar-nav">
+                <div class="nav-item">
+                    <a href="login.html" class="nav-link active">Login</a>
+                </div>
+                <div class="nav-item">
+                    <a href="register.html" class="nav-link">Register</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>Welcome Back</h2>
+                <p class="text-muted">Sign in to continue to Ride A Bull</p>
+            </div>
+            <div class="auth-body">
+                <button id="googleLoginBtn" class="social-login-btn mb-4">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google">
+                    Sign in with Google
+                </button>
+                
+                <div class="auth-divider">
+                    <span>OR</span>
+                </div>
+                
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email" class="form-label">University Email</label>
+                        <input type="email" id="email" class="form-control" placeholder="your.name@university.edu" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    <div class="d-flex justify-content-between mb-4">
+                        <div class="form-check">
+                            <input type="checkbox" id="remember" class="form-check-input">
+                            <label for="remember" class="form-check-label">Remember me</label>
+                        </div>
+                        <a href="#" class="text-primary fs-sm">Forgot password?</a>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Sign In</button>
+                </form>
+            </div>
+            <div class="auth-footer">
+                <p class="m-0">Don't have an account? <a href="register.html" class="text-primary">Register</a></p>
+            </div>
+        </div>
+        <div id="error-message" class="error-message mt-4" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Handle Google Login
+        document.getElementById('googleLoginBtn').addEventListener('click', () => {
+            window.location.href = '/api/auth/signin/google';
+        });
+        
+        // Handle Traditional Login
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const loginData = {
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value
+            };
+            
+            try {
+                const response = await fetch('http://localhost:3000/api/users/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(loginData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Store token with Bearer prefix
+                    localStorage.setItem('token', `Bearer ${data.token}`);
+                    console.log('Login successful, token stored:', localStorage.getItem('token'));
+                    window.location.href = 'rides.html';
+                } else {
+                    throw new Error(data.message || 'Login failed');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                const errorMessage = document.getElementById('error-message');
+                errorMessage.textContent = error.message;
+                errorMessage.style.display = 'block';
+            }
+        });
+        
+        // Check for error parameter in URL (from NextAuth)
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        if (error) {
+            const errorMessage = document.getElementById('error-message');
+            if (error === 'AccessDenied') {
+                errorMessage.textContent = 'Only .edu email addresses are allowed to sign in.';
+            } else {
+                errorMessage.textContent = 'Authentication error. Please try again.';
+            }
+            errorMessage.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
