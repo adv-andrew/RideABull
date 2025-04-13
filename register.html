@@ -5,65 +5,116 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Ride A Bull</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <nav class="nav">
-        <a href="index.html" class="nav-logo">Ride A Bull</a>
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="navbar-brand">
+                <i class="fas fa-car-side text-primary"></i> Ride A Bull
+            </a>
+            <div class="navbar-nav">
+                <div class="nav-item">
+                    <a href="login.html" class="nav-link">Login</a>
+                </div>
+                <div class="nav-item">
+                    <a href="register.html" class="nav-link active">Register</a>
+                </div>
+            </div>
+        </div>
     </nav>
 
-    <div class="container">
-        <div style="max-width: 500px; margin: 2rem auto;">
-            <h1>Create Your Account</h1>
-            <p style="color: #666; margin-bottom: 2rem;">
-                Join the community of student drivers and passengers.
-            </p>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>Create Your Account</h2>
+                <p class="text-muted">Join the community of student drivers and passengers</p>
+            </div>
+            <div class="auth-body">
+                <button id="googleRegisterBtn" class="social-login-btn mb-4">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg" alt="Google">
+                    Sign up with Google
+                </button>
 
-            <div class="card">
+                <div class="auth-divider">
+                    <span>OR</span>
+                </div>
+
                 <form id="registerForm">
                     <div class="form-group">
-                        <input type="text" id="name" placeholder="Full Name" required>
+                        <label for="name" class="form-label">Full Name</label>
+                        <input type="text" id="name" class="form-control" placeholder="John Doe" required>
                     </div>
                     <div class="form-group">
-                        <input type="email" id="email" placeholder="University Email" required>
+                        <label for="email" class="form-label">University Email</label>
+                        <input type="email" id="email" class="form-control" placeholder="your.name@university.edu" required>
+                        <div class="form-text">We'll only accept .edu email addresses</div>
                     </div>
                     <div class="form-group">
-                        <input type="text" id="university" placeholder="University Name" required>
+                        <label for="university" class="form-label">University</label>
+                        <input type="text" id="university" class="form-control" placeholder="University of Florida" required>
                     </div>
                     <div class="form-group">
-                        <input type="password" id="password" placeholder="Password" required>
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" class="form-control" placeholder="••••••••" required>
                     </div>
                     <div class="form-group">
-                        <input type="password" id="confirmPassword" placeholder="Confirm Password" required>
+                        <label for="confirmPassword" class="form-label">Confirm Password</label>
+                        <input type="password" id="confirmPassword" class="form-control" placeholder="••••••••" required>
                     </div>
-                    <button type="submit" class="btn" style="width: 100%;">Register</button>
+                    <div class="form-check mb-4">
+                        <input type="checkbox" id="terms" class="form-check-input" required>
+                        <label for="terms" class="form-check-label">I agree to the <a href="#" class="text-primary">Terms of Service</a> and <a href="#" class="text-primary">Privacy Policy</a></label>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-block">Create Account</button>
                 </form>
             </div>
-
-            <p style="text-align: center; margin-top: 2rem;">
-                Already have an account? <a href="index.html" style="color: var(--primary-color);">Login here</a>
-            </p>
+            <div class="auth-footer">
+                <p class="m-0">Already have an account? <a href="login.html" class="text-primary">Login</a></p>
+            </div>
         </div>
+        <div id="error-message" class="error-message mt-4" style="display: none;"></div>
     </div>
     <script>
+        // Handle Google Registration
+        document.getElementById('googleRegisterBtn').addEventListener('click', () => {
+            window.location.href = '/api/auth/signin/google';
+        });
+
+        // Handle Traditional Registration
         document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            
-            if (password !== confirmPassword) {
-                alert('Passwords do not match!');
+            const errorMessage = document.getElementById('error-message');
+
+            // Reset error message
+            errorMessage.style.display = 'none';
+
+            // Validate email domain
+            const email = document.getElementById('email').value;
+            if (!email.endsWith('.edu')) {
+                errorMessage.textContent = 'Only .edu email addresses are allowed to register.';
+                errorMessage.style.display = 'block';
                 return;
             }
-            
+
+            // Validate password match
+            if (password !== confirmPassword) {
+                errorMessage.textContent = 'Passwords do not match!';
+                errorMessage.style.display = 'block';
+                return;
+            }
+
             const userData = {
                 name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
+                email: email,
                 university: document.getElementById('university').value,
                 password: password
             };
-            
+
             try {
                 const response = await fetch('http://localhost:3000/api/users/register', {
                     method: 'POST',
@@ -72,9 +123,9 @@
                     },
                     body: JSON.stringify(userData)
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok) {
                     // Store the token with 'Bearer ' prefix
                     localStorage.setItem('token', `Bearer ${data.token}`);
@@ -85,9 +136,24 @@
                     throw new Error(data.message || 'Registration failed');
                 }
             } catch (error) {
-                alert('Error during registration: ' + error.message);
+                console.error('Registration error:', error);
+                errorMessage.textContent = error.message;
+                errorMessage.style.display = 'block';
             }
         });
+
+        // Check for error parameter in URL (from NextAuth)
+        const urlParams = new URLSearchParams(window.location.search);
+        const error = urlParams.get('error');
+        if (error) {
+            const errorMessage = document.getElementById('error-message');
+            if (error === 'AccessDenied') {
+                errorMessage.textContent = 'Only .edu email addresses are allowed to register.';
+            } else {
+                errorMessage.textContent = 'Authentication error. Please try again.';
+            }
+            errorMessage.style.display = 'block';
+        }
     </script>
 </body>
-</html> 
+</html>

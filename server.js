@@ -246,10 +246,10 @@ app.get('/api/auth/google',
 );
 
 app.get('/api/auth/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login' }),
+  passport.authenticate('google', { failureRedirect: '/login.html' }),
   (req, res) => {
     const token = generateToken(req.user);
-    res.redirect(`/index.html?token=${token}`);
+    res.redirect(`/login.html?token=${token}`);
   }
 );
 

@@ -5,91 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ride A Bull - Student Rideshare</title>
     <link rel="stylesheet" href="styles.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <nav class="nav">
-        <a href="index.html" class="nav-logo">Ride A Bull</a>
-    </nav>
-
-    <div class="container">
-        <div style="text-align: center; max-width: 600px; margin: 4rem auto;">
-            <h1>Simple, Secure Student Rides</h1>
-            <p style="margin-bottom: 2rem; color: #666;">
-                Connect with fellow students for safe, affordable rides to and from campus.
-            </p>
-            
-            <div class="card" style="max-width: 400px; margin: 0 auto;">
-                <form id="loginForm">
-                    <div class="form-group">
-                        <input type="email" id="email" placeholder="University Email" required>
-                    </div>
-                    <div class="form-group">
-                        <input type="password" id="password" placeholder="Password" required>
-                    </div>
-                    <button type="submit" class="btn" style="width: 100%;">Login with University Email</button>
-                </form>
-                
-                <div style="margin: 1rem 0; text-align: center;">
-                    <div style="display: flex; align-items: center; margin: 1rem 0;">
-                        <div style="flex: 1; height: 1px; background: #ddd;"></div>
-                        <span style="padding: 0 1rem; color: #666;">or</span>
-                        <div style="flex: 1; height: 1px; background: #ddd;"></div>
-                    </div>
-                    
-                    <a href="/api/auth/google" class="btn google-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                        <img src="https://www.google.com/favicon.ico" alt="Google" style="width: 18px; height: 18px;">
-                        Login with Google
-                    </a>
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="navbar-brand">
+                <i class="fas fa-car-side text-primary"></i> Ride A Bull
+            </a>
+            <div class="navbar-nav">
+                <div class="nav-item">
+                    <a href="login.html" class="nav-link">Login</a>
+                </div>
+                <div class="nav-item">
+                    <a href="register.html" class="nav-link">Register</a>
                 </div>
             </div>
-
-            <p style="margin-top: 2rem;">
-                New to Ride A Bull? <a href="register.html" style="color: var(--primary-color);">Register here</a>
-            </p>
         </div>
-    </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title">Simple, Secure Student Rides</h1>
+                <p class="hero-subtitle">
+                    Connect with fellow students for safe, affordable rides to and from campus.
+                    Only verified .edu email addresses can join our community.
+                </p>
+
+                <div class="hero-cta">
+                    <a href="login.html" class="btn btn-primary btn-lg">Login</a>
+                    <a href="register.html" class="btn btn-cta btn-lg">Register</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="container mt-5 mb-5">
+        <div class="row">
+            <div class="card p-5 text-center">
+                <div class="card-body">
+                    <i class="fas fa-shield-alt text-primary fs-xl mb-3" style="font-size: 3rem;"></i>
+                    <h3 class="card-title">Safe & Secure</h3>
+                    <p class="card-text">Only verified university students with .edu email addresses can join our platform, ensuring a trusted community.</p>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <script>
-        // Check for token in URL (from Google OAuth callback)
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-        if (token) {
-            localStorage.setItem('token', `Bearer ${token}`);
-            window.location.href = 'rides.html';
-        }
-
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const loginData = {
-                email: document.getElementById('email').value,
-                password: document.getElementById('password').value
-            };
-            
+        // Check if user is already logged in
+        document.addEventListener('DOMContentLoaded', async () => {
             try {
-                const response = await fetch('http://localhost:3000/api/users/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(loginData)
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    localStorage.setItem('token', `Bearer ${data.token}`);
-                    console.log('Login successful, token stored:', localStorage.getItem('token'));
+                // Check for token in URL (from Google OAuth callback)
+                const urlParams = new URLSearchParams(window.location.search);
+                const token = urlParams.get('token');
+                if (token) {
+                    localStorage.setItem('token', `Bearer ${token}`);
                     window.location.href = 'rides.html';
-                } else {
-                    throw new Error(data.message || 'Login failed');
+                    return;
+                }
+
+                // Check for existing token
+                const existingToken = localStorage.getItem('token');
+                if (existingToken) {
+                    try {
+                        const userResponse = await fetch('http://localhost:3000/api/users/me', {
+                            headers: {
+                                'Authorization': existingToken
+                            }
+                        });
+
+                        if (userResponse.ok) {
+                            // User is authenticated with JWT
+                            window.location.href = 'rides.html';
+                        }
+                    } catch (error) {
+                        console.log('JWT validation failed, user needs to login');
+                    }
                 }
             } catch (error) {
-                console.error('Login error:', error);
-                alert('Login failed: ' + error.message);
+                console.log('No active session found');
             }
         });
     </script>
 </body>
-</html> 
+</html>
