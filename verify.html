@@ -12,7 +12,7 @@
     <nav class="navbar">
         <div class="container">
             <a href="index.html" class="navbar-brand">
-                <i class="fas fa-car-side text-primary"></i> Ride A Bull
+                <img src="images/rideabull logo top.svg" alt="Ride A Bull" class="navbar-logo">
             </a>
         </div>
     </nav>
@@ -26,14 +26,14 @@
             </div>
             <div class="auth-body text-center">
                 <p>Please check your inbox and click the verification link to complete your registration.</p>
-                
+
                 <div class="mt-4 mb-4">
                     <div class="d-flex justify-content-center align-items-center gap-3">
                         <i class="fas fa-envelope text-primary"></i>
                         <span id="userEmail" class="fw-semibold">your.email@university.edu</span>
                     </div>
                 </div>
-                
+
                 <div class="mt-4">
                     <p class="text-muted fs-sm">Didn't receive the email?</p>
                     <button id="resendBtn" class="btn btn-outline">Resend Verification Email</button>
@@ -51,17 +51,17 @@
             // Get email from URL parameters
             const urlParams = new URLSearchParams(window.location.search);
             const email = urlParams.get('email');
-            
+
             if (email) {
                 document.getElementById('userEmail').textContent = email;
             }
-            
+
             // Handle resend verification
             document.getElementById('resendBtn').addEventListener('click', async () => {
                 const statusMessage = document.getElementById('status-message');
                 statusMessage.className = 'mt-4';
                 statusMessage.style.display = 'block';
-                
+
                 try {
                     const response = await fetch('http://localhost:3000/api/users/resend-verification', {
                         method: 'POST',
@@ -70,9 +70,9 @@
                         },
                         body: JSON.stringify({ email: document.getElementById('userEmail').textContent })
                     });
-                    
+
                     const data = await response.json();
-                    
+
                     if (response.ok) {
                         statusMessage.textContent = 'Verification email has been resent. Please check your inbox.';
                         statusMessage.className = 'mt-4 text-center p-3 rounded bg-light text-success';
@@ -84,26 +84,26 @@
                     statusMessage.className = 'mt-4 text-center p-3 rounded bg-light text-danger';
                 }
             });
-            
+
             // Check verification status
             const token = urlParams.get('token');
             if (token) {
                 verifyEmail(token);
             }
         });
-        
+
         async function verifyEmail(token) {
             const statusMessage = document.getElementById('status-message');
             statusMessage.style.display = 'block';
-            
+
             try {
                 const response = await fetch(`http://localhost:3000/api/users/verify?token=${token}`);
                 const data = await response.json();
-                
+
                 if (response.ok) {
                     statusMessage.textContent = 'Email verified successfully! Redirecting to login...';
                     statusMessage.className = 'mt-4 text-center p-3 rounded bg-light text-success';
-                    
+
                     // Redirect to login after 3 seconds
                     setTimeout(() => {
                         window.location.href = 'login.html';

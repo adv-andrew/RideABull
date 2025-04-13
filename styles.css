@@ -442,8 +442,13 @@ select.form-control {
 }
 
 .navbar-brand img {
-    height: 36px;
+    height: 40px;
     margin-right: var(--space-2);
+}
+
+.navbar-logo {
+    max-width: 200px;
+    height: auto;
 }
 
 .navbar-nav {

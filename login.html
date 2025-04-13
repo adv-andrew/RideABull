@@ -12,7 +12,7 @@
     <nav class="navbar">
         <div class="container">
             <a href="index.html" class="navbar-brand">
-                <i class="fas fa-car-side text-primary"></i> Ride A Bull
+                <img src="images/rideabull logo top.svg" alt="Ride A Bull" class="navbar-logo">
             </a>
             <div class="navbar-nav">
                 <div class="nav-item">
@@ -28,7 +28,7 @@
                 <h2>Welcome Back</h2>
                 <p>Sign in to continue to Ride A Bull</p>
             </div>
-            
+
             <div class="auth-body">
                 <form id="loginForm">
                     <div class="form-group">
@@ -69,12 +69,12 @@
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const loginData = {
                 email: document.getElementById('email').value,
                 password: document.getElementById('password').value
             };
-            
+
             try {
                 const response = await fetch('http://localhost:3000/api/users/login', {
                     method: 'POST',
@@ -83,9 +83,9 @@
                     },
                     body: JSON.stringify(loginData)
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (response.ok) {
                     localStorage.setItem('token', `Bearer ${data.token}`);
                     console.log('Login successful, token stored:', localStorage.getItem('token'));
