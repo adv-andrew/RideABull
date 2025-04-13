@@ -1,6 +1,6 @@
 # 🚗 RideABull
 
-<img src="images/rideabull-logo-final.svg" alt="RideABull Logo" width="200">
+<img src="images/rideabull logo top.svg" alt="RideABull Logo" width="200">
 
 A secure, student-only rideshare platform exclusively for university students with .edu email addresses. RideABull connects students for safe, affordable rides to and from campus while reducing carbon footprint.
 
