@@ -42,14 +42,60 @@
         </div>
     </section>
 
-    <section class="container mt-5 mb-5">
-        <div class="row">
-            <div class="card p-5 text-center">
-                <div class="card-body">
-                    <i class="fas fa-shield-alt text-primary fs-xl mb-3" style="font-size: 3rem;"></i>
-                    <h3 class="card-title">Safe & Secure</h3>
-                    <p class="card-text">Only verified university students with .edu email addresses can join our platform, ensuring a trusted community.</p>
+    <section class="feature-cards">
+        <div class="container">
+            <div class="card-slider">
+                <div class="card-slider-wrapper">
+                    <!-- Card 1 -->
+                    <div class="feature-card">
+                        <div class="feature-card-image">
+                            <img src="images/security.svg" alt="Secure Community">
+                        </div>
+                        <h3 class="feature-card-title">Safe & Secure Community</h3>
+                        <p class="feature-card-text">
+                            Only verified university students with .edu email addresses can join our platform, ensuring a trusted community.
+                        </p>
+                        <a href="register.html" class="feature-card-link">
+                            Join our community <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <!-- Card 2 -->
+                    <div class="feature-card">
+                        <div class="feature-card-image">
+                            <img src="images/saveMoney.svg" alt="Save Money">
+                        </div>
+                        <h3 class="feature-card-title">Save Money on Travel</h3>
+                        <p class="feature-card-text">
+                            Split costs with fellow students and save on gas, parking, and vehicle maintenance while traveling to and from campus.
+                        </p>
+                        <a href="#" class="feature-card-link">
+                            Learn how it works <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
+
+                    <!-- Card 3 -->
+                    <div class="feature-card">
+                        <div class="feature-card-image">
+                            <img src="images/carbonEmission.svg" alt="Reduce Emissions">
+                        </div>
+                        <h3 class="feature-card-title">Reduce Carbon Footprint</h3>
+                        <p class="feature-card-text">
+                            By carpooling with other students, you're helping reduce carbon emissions and making a positive impact on the environment.
+                        </p>
+                        <a href="#" class="feature-card-link">
+                            See the impact <i class="fas fa-arrow-right"></i>
+                        </a>
+                    </div>
                 </div>
+
+                <!-- Navigation Buttons -->
+                <button class="slider-nav prev" aria-label="Previous slide">
+                    <i class="fas fa-chevron-left"></i>
+                </button>
+                <button class="slider-nav next" aria-label="Next slide">
+                    <i class="fas fa-chevron-right"></i>
+                </button>
             </div>
         </div>
     </section>
@@ -87,6 +133,47 @@
                 }
             } catch (error) {
                 console.log('No active session found');
+            }
+
+            // Card Slider Functionality
+            const sliderWrapper = document.querySelector('.card-slider-wrapper');
+            const prevButton = document.querySelector('.slider-nav.prev');
+            const nextButton = document.querySelector('.slider-nav.next');
+            const cards = document.querySelectorAll('.feature-card');
+
+            if (sliderWrapper && prevButton && nextButton && cards.length > 0) {
+                const cardWidth = cards[0].offsetWidth;
+                const gap = 20; // Approximate gap between cards
+                const scrollAmount = cardWidth + gap;
+
+                // Next button click handler
+                nextButton.addEventListener('click', () => {
+                    sliderWrapper.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+                });
+
+                // Previous button click handler
+                prevButton.addEventListener('click', () => {
+                    sliderWrapper.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+                });
+
+                // Touch swipe functionality
+                let startX, startScrollLeft;
+
+                sliderWrapper.addEventListener('touchstart', (e) => {
+                    startX = e.touches[0].pageX;
+                    startScrollLeft = sliderWrapper.scrollLeft;
+                }, { passive: true });
+
+                sliderWrapper.addEventListener('touchmove', (e) => {
+                    if (!startX) return;
+                    const x = e.touches[0].pageX;
+                    const walk = (x - startX) * 2; // Multiply by 2 for faster scrolling
+                    sliderWrapper.scrollLeft = startScrollLeft - walk;
+                }, { passive: true });
+
+                sliderWrapper.addEventListener('touchend', () => {
+                    startX = null;
+                });
             }
         });
     </script>
