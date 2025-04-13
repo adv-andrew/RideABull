@@ -6,7 +6,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const session = require('express-session');
 const multer = require('multer');
+const { GridFsStorage } = require('multer-gridfs-storage');
+const Grid = require('gridfs-stream');
 const { passport, generateToken } = require('./routes/auth');
+const { ObjectId } = require('mongodb');
 
 // Import models
 const User = require('./models/User');
@@ -16,20 +19,29 @@ const Trip = require('./models/Trip');
 
 const app = express();
 
-// Configure multer for handling file uploads
-const storage = multer.memoryStorage();
-const upload = multer({
-  storage: storage,
-  limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB limit
-  },
+// Create GridFS storage engine
+const storage = new GridFsStorage({
+  url: process.env.MONGODB_URI,
+  options: { useNewUrlParser: true, useUnifiedTopology: true },
+  file: (req, file) => {
+    return {
+      bucketName: 'profilePictures',
+      filename: `profile-${Date.now()}-${file.originalname}`
+    };
+  }
+});
+
+// Create multer upload instance
+const upload = multer({ 
+  storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('image/')) {
       cb(null, true);
     } else {
       cb(new Error('Not an image! Please upload an image.'), false);
     }
-  },
+  }
 });
 
 // Middleware
@@ -38,7 +50,21 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json());
+
+// Increase payload size limits
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
+// Add error handling middleware for payload size errors
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 413) {
+    return res.status(413).json({ 
+      error: 'payload_too_large', 
+      message: 'The uploaded file is too large. Maximum size is 10MB.' 
+    });
+  }
+  next(err);
+});
 
 // Session middleware
 app.use(session({
@@ -57,24 +83,63 @@ mongoose.connect(process.env.MONGODB_URI)
     console.log('Connected to MongoDB');
     console.log('MongoDB URI:', process.env.MONGODB_URI);
     console.log('MongoDB Database:', mongoose.connection.db.databaseName);
+    
+    // Initialize GridFS
+    gfs = Grid(mongoose.connection.db, mongoose.mongo);
+    gfs.collection('profilePictures');
   })
   .catch(err => console.error('MongoDB connection error:', err));
 
 // Authentication Middleware
 const auth = async (req, res, next) => {
   try {
-    const token = req.header('Authorization').replace('Bearer ', '');
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Check if Authorization header exists
+    const authHeader = req.header('Authorization');
+    if (!authHeader) {
+      return res.status(401).json({ 
+        error: 'missing_token', 
+        message: 'Please authenticate. No token provided.' 
+      });
+    }
+
+    // Extract token from Authorization header
+    const token = authHeader.replace('Bearer ', '');
+    if (!token) {
+      return res.status(401).json({ 
+        error: 'invalid_token_format', 
+        message: 'Please authenticate. Invalid token format.' 
+      });
+    }
+
+    // Verify token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+      console.error('Token verification error:', error);
+      return res.status(401).json({ 
+        error: 'invalid_token', 
+        message: 'Please authenticate. Token is invalid or expired.' 
+      });
+    }
+
+    // Find user
     const user = await User.findOne({ _id: decoded.userId });
-    
     if (!user) {
-      throw new Error();
+      return res.status(401).json({ 
+        error: 'user_not_found', 
+        message: 'Please authenticate. User not found.' 
+      });
     }
     
     req.user = user;
     next();
   } catch (error) {
-    res.status(401).json({ message: 'Please authenticate' });
+    console.error('Authentication error:', error);
+    res.status(401).json({ 
+      error: 'authentication_error', 
+      message: 'Please authenticate. An error occurred during authentication.' 
+    });
   }
 };
 
@@ -206,46 +271,87 @@ app.get('/api/users/temp-token', auth, async (req, res) => {
 });
 
 // Update profile endpoint
-app.put('/api/users/profile', auth, upload.single('profilePicture'), async (req, res) => {
+app.put('/api/users/profile', auth, async (req, res) => {
   try {
-    const { 
-      name, 
-      university, 
-      phone, 
-      bio, 
-      carInfo, 
-      licensePlate,
-      newPassword 
-    } = req.body;
-
+    // Parse the request body as JSON
+    const body = req.body;
+    
+    // Extract the profile picture from the body
+    let profilePicture = null;
+    if (body.profilePicture && typeof body.profilePicture === 'string' && body.profilePicture.startsWith('data:image')) {
+      profilePicture = body.profilePicture;
+      console.log('Profile picture received:', profilePicture.substring(0, 100) + '...');
+    }
+    
     const updates = {};
     
-    if (name) updates.name = name;
-    if (university) updates.university = university;
-    if (phone) updates.phone = phone;
-    if (bio) updates.bio = bio;
-    if (carInfo) updates.carInfo = carInfo;
-    if (licensePlate) updates.licensePlate = licensePlate;
+    if (body.name) updates.name = body.name;
+    if (body.university) updates.university = body.university;
+    if (body.phone !== undefined) updates.phone = body.phone;
+    if (body.bio !== undefined) updates.bio = body.bio;
+    if (body.carInfo !== undefined) updates.carInfo = body.carInfo;
+    if (body.licensePlate !== undefined) updates.licensePlate = body.licensePlate;
     
-    // Handle profile picture upload
-    if (req.file) {
-      const base64Image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-      updates.profilePicture = base64Image;
+    // Handle profile picture
+    if (profilePicture) {
+      // Convert base64 to buffer
+      const base64Data = profilePicture.replace(/^data:image\/\w+;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      
+      // Create a file object for GridFS
+      const file = {
+        fieldname: 'profilePicture',
+        originalname: 'profile.jpg',
+        encoding: '7bit',
+        mimetype: 'image/jpeg',
+        buffer: buffer,
+        size: buffer.length
+      };
+      
+      // Upload to GridFS
+      const uploadPromise = new Promise((resolve, reject) => {
+        const uploadStream = storage.createWriteStream();
+        uploadStream.on('finish', (file) => {
+          console.log('File uploaded to GridFS:', file);
+          resolve(file);
+        });
+        uploadStream.on('error', (error) => {
+          console.error('Error uploading to GridFS:', error);
+          reject(error);
+        });
+        uploadStream.end(buffer);
+      });
+      
+      try {
+        const uploadedFile = await uploadPromise;
+        // Store the ObjectId as a string
+        updates.profilePicture = uploadedFile._id.toString();
+        console.log('Profile picture saved to GridFS with ID:', updates.profilePicture);
+      } catch (error) {
+        console.error('Failed to upload profile picture to GridFS:', error);
+        // Continue without the profile picture
+      }
     }
 
     // Update password if provided
-    if (newPassword) {
-      updates.passwordHash = await bcrypt.hash(newPassword, 10);
+    if (body.newPassword) {
+      updates.passwordHash = await bcrypt.hash(body.newPassword, 10);
     }
 
+    console.log('Updating user with:', Object.keys(updates));
+    
+    // Use findByIdAndUpdate with the $set operator
     const user = await User.findByIdAndUpdate(
       req.user._id,
       { $set: updates },
       { new: true, runValidators: true }
     );
+    
+    console.log('User updated successfully. Profile picture saved:', !!user.profilePicture);
 
     res.json({ user });
   } catch (error) {
+    console.error('Error updating profile:', error);
     res.status(400).json({ message: error.message });
   }
 });
@@ -260,6 +366,33 @@ app.get('/api/users/me', auth, async (req, res) => {
         message: 'User not found' 
       });
     }
+    
+    // Get profile picture URL if it exists
+    let profilePictureUrl = null;
+    if (user.profilePicture) {
+      try {
+        console.log('User has profile picture:', user.profilePicture);
+        
+        // Validate that the profile picture ID is a valid ObjectId
+        if (!ObjectId.isValid(user.profilePicture)) {
+          console.log('Invalid profile picture ID format:', user.profilePicture);
+        } else {
+          // Check if the profile picture exists in GridFS
+          const file = await gfs.files.findOne({ _id: new ObjectId(user.profilePicture) });
+          if (file) {
+            console.log('Profile picture found in GridFS:', file.filename);
+            profilePictureUrl = `/api/users/profile-picture/${user.profilePicture}`;
+          } else {
+            console.log('Profile picture not found in GridFS');
+          }
+        }
+      } catch (error) {
+        console.error('Error finding profile picture in GridFS:', error);
+      }
+    } else {
+      console.log('User has no profile picture');
+    }
+    
     res.json({
       name: user.name,
       email: user.email,
@@ -268,6 +401,7 @@ app.get('/api/users/me', auth, async (req, res) => {
       bio: user.bio,
       carInfo: user.carInfo,
       licensePlate: user.licensePlate,
+      profilePicture: profilePictureUrl,
       createdAt: user.createdAt,
       hasPassword: !!user.passwordHash
     });
@@ -278,6 +412,63 @@ app.get('/api/users/me', auth, async (req, res) => {
       message: 'Server error', 
       details: error.message 
     });
+  }
+});
+
+// Get profile picture from GridFS
+app.get('/api/users/profile-picture/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log('Profile picture request for ID:', id);
+    
+    // Check if the ID is valid
+    if (!id || id === 'undefined' || id === 'null') {
+      console.log('Invalid profile picture ID:', id);
+      return res.redirect('/default-profile.png');
+    }
+    
+    // Validate ObjectId format before attempting conversion
+    if (!ObjectId.isValid(id)) {
+      console.log('Invalid ObjectId format:', id);
+      return res.redirect('/default-profile.png');
+    }
+    
+    // Try to convert to ObjectId
+    let objectId;
+    try {
+      objectId = new ObjectId(id);
+      console.log('Successfully converted to ObjectId:', objectId.toString());
+    } catch (error) {
+      console.log('Error converting to ObjectId:', id, error);
+      return res.redirect('/default-profile.png');
+    }
+    
+    // Find the file in GridFS
+    const file = await gfs.files.findOne({ _id: objectId });
+    
+    if (!file) {
+      console.log('Profile picture not found in GridFS:', id);
+      return res.redirect('/default-profile.png');
+    }
+    
+    console.log('Found profile picture in GridFS:', file.filename, 'Content-Type:', file.contentType);
+    
+    // Set the content type
+    res.set('Content-Type', file.contentType);
+    
+    // Create a read stream and pipe it to the response
+    const readStream = gfs.createReadStream({ _id: objectId });
+    
+    // Add error handling for the stream
+    readStream.on('error', (error) => {
+      console.error('Error streaming profile picture:', error);
+      res.redirect('/default-profile.png');
+    });
+    
+    readStream.pipe(res);
+  } catch (error) {
+    console.error('Error finding profile picture in GridFS:', error);
+    res.redirect('/default-profile.png');
   }
 });
 
@@ -434,6 +625,61 @@ app.get('/api/auth/google/callback',
   }
 );
 
+// Update user profile
+app.put('/api/users/me', auth, async (req, res) => {
+  try {
+    const updates = req.body;
+    
+    // Handle profile picture if provided
+    if (updates.profilePicture && updates.profilePicture.startsWith('data:image')) {
+      // Process the base64 image and store it
+      // This is a simplified version - in a real app, you'd save this to a file or cloud storage
+      updates.profilePicture = updates.profilePicture;
+    }
+    
+    // Update the user
+    const user = await User.findByIdAndUpdate(
+      req.user._id,
+      { $set: updates },
+      { new: true, runValidators: true }
+    );
+    
+    res.json(user);
+  } catch (error) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// Get user stats
+app.get('/api/users/stats', auth, async (req, res) => {
+  try {
+    // For now, return mock stats
+    // In a real app, you would calculate these from the database
+    const stats = {
+      ridesGiven: 0,
+      ridesTaken: 0,
+      averageRating: 0
+    };
+    
+    res.json(stats);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Get user reviews
+app.get('/api/users/reviews', auth, async (req, res) => {
+  try {
+    // For now, return an empty array
+    // In a real app, you would fetch reviews from the database
+    const reviews = [];
+    
+    res.json(reviews);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 // Serve static files from current directory (should be after API routes)
 app.use(express.static('.'));
 
@@ -441,4 +687,13 @@ app.use(express.static('.'));
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+}).on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.log(`Port ${PORT} is already in use, trying port ${PORT + 1}`);
+    app.listen(PORT + 1, () => {
+      console.log(`Server is running on port ${PORT + 1}`);
+    });
+  } else {
+    console.error('Server error:', err);
+  }
 }); 

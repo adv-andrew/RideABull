@@ -54,11 +54,17 @@
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        
+        #cameraContainer {
+            margin: 15px 0;
+            text-align: center;
         }
         
         #camera {
+            transform: scaleX(-1); /* Mirror the camera feed */
             margin-bottom: 15px;
-            border-radius: 8px;
         }
     </style>
 </head>
@@ -155,15 +161,20 @@
                             </div>
                             <div class="profile-picture-actions">
                                 <button type="button" id="takePhotoBtn" class="btn btn-outline-primary">
-                                    <i class="fas fa-camera"></i> Take Photo
+                                    <i class="fas fa-camera"></i> Open Camera
+                                </button>
+                                <button type="button" id="capturePhotoBtn" class="btn btn-primary" style="display: none;">
+                                    <i class="fas fa-camera"></i> Capture Photo
                                 </button>
                                 <button type="button" id="uploadPhotoBtn" class="btn btn-outline-secondary">
                                     <i class="fas fa-upload"></i> Upload Photo
                                 </button>
                                 <input type="file" id="photoInput" accept="image/*" style="display: none;">
                             </div>
-                            <video id="camera" style="display: none; width: 100%; max-width: 400px;"></video>
-                            <canvas id="canvas" style="display: none;"></canvas>
+                            <div id="cameraContainer" style="display: none;">
+                                <video id="camera" autoplay playsinline style="width: 100%; max-width: 400px; border-radius: 8px;"></video>
+                                <canvas id="canvas" style="display: none;"></canvas>
+                            </div>
                         </div>
                     </div>
 
@@ -213,10 +224,10 @@
         // Fetch user data
         async function fetchUserData() {
             try {
-                const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+                const token = localStorage.getItem('token');
                 const response = await fetch('http://localhost:3000/api/users/me', {
                     headers: {
-                        'Authorization': authToken
+                        'Authorization': token
                     }
                 });
 
@@ -257,8 +268,10 @@
             const profileImage = document.getElementById('profileImage');
             const noImagePlaceholder = document.getElementById('noImagePlaceholder');
             const takePhotoBtn = document.getElementById('takePhotoBtn');
+            const capturePhotoBtn = document.getElementById('capturePhotoBtn');
             const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
             const photoInput = document.getElementById('photoInput');
+            const cameraContainer = document.getElementById('cameraContainer');
             const camera = document.getElementById('camera');
             const canvas = document.getElementById('canvas');
 
@@ -289,35 +302,129 @@
 
             // Handle camera capture
             takePhotoBtn.addEventListener('click', async () => {
-                if (camera.style.display === 'none') {
+                if (cameraContainer.style.display === 'none') {
                     try {
-                        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                        stream = await navigator.mediaDevices.getUserMedia({ 
+                            video: { 
+                                facingMode: 'user',
+                                width: { ideal: 1280 },
+                                height: { ideal: 720 }
+                            } 
+                        });
                         camera.srcObject = stream;
-                        camera.style.display = 'block';
-                        takePhotoBtn.textContent = 'Take Photo';
+                        cameraContainer.style.display = 'block';
+                        takePhotoBtn.textContent = 'Close Camera';
+                        capturePhotoBtn.style.display = 'inline-block';
                     } catch (err) {
                         console.error('Error accessing camera:', err);
                         showError('Unable to access camera. Please check your camera permissions.');
                     }
                 } else {
-                    // Capture photo
-                    canvas.width = camera.videoWidth;
-                    canvas.height = camera.videoHeight;
-                    canvas.getContext('2d').drawImage(camera, 0, 0);
-                    
-                    // Convert to base64
-                    const imageData = canvas.toDataURL('image/jpeg');
-                    profileImage.src = imageData;
-                    profileImage.style.display = 'block';
-                    noImagePlaceholder.style.display = 'none';
-                    
                     // Stop camera stream
                     if (stream) {
                         stream.getTracks().forEach(track => track.stop());
                     }
-                    camera.style.display = 'none';
-                    takePhotoBtn.textContent = 'Take Photo';
+                    cameraContainer.style.display = 'none';
+                    takePhotoBtn.textContent = 'Open Camera';
+                    capturePhotoBtn.style.display = 'none';
                 }
+            });
+
+            // Handle photo capture
+            capturePhotoBtn.addEventListener('click', () => {
+                // Capture photo
+                canvas.width = camera.videoWidth;
+                canvas.height = camera.videoHeight;
+                const context = canvas.getContext('2d');
+                context.scale(-1, 1); // Flip horizontally to correct mirror effect
+                context.translate(-canvas.width, 0);
+                context.drawImage(camera, 0, 0);
+                
+                // Convert to base64
+                const imageData = canvas.toDataURL('image/jpeg');
+                profileImage.src = imageData;
+                profileImage.style.display = 'block';
+                noImagePlaceholder.style.display = 'none';
+                
+                // Stop camera stream
+                if (stream) {
+                    stream.getTracks().forEach(track => track.stop());
+                }
+                cameraContainer.style.display = 'none';
+                takePhotoBtn.textContent = 'Open Camera';
+                capturePhotoBtn.style.display = 'none';
+            });
+        }
+
+        // Function to display profile picture
+        function displayProfilePicture(imageData) {
+            const profileImage = document.getElementById('profileImage');
+            const defaultImage = '/default-profile.png';
+            
+            if (!imageData) {
+                console.log('No profile picture data provided');
+                profileImage.src = defaultImage;
+                return;
+            }
+            
+            // Check if it's a base64 string
+            if (imageData.startsWith('data:image')) {
+                console.log('Using base64 profile picture');
+                profileImage.src = imageData;
+                return;
+            }
+            
+            // Check if it's a URL
+            if (imageData.startsWith('http')) {
+                console.log('Using URL profile picture:', imageData);
+                profileImage.src = imageData;
+                return;
+            }
+            
+            // Assume it's a GridFS ID
+            console.log('Using GridFS profile picture ID:', imageData);
+            profileImage.src = `/api/users/profile-picture/${imageData}`;
+            
+            // Add error handling for the image
+            profileImage.onerror = function() {
+                console.error('Failed to load profile picture, using default. ID:', imageData);
+                this.src = defaultImage;
+            };
+        }
+
+        // Function to compress image
+        async function compressImage(base64String, maxWidth = 800, maxHeight = 800, quality = 0.7) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    let width = img.width;
+                    let height = img.height;
+
+                    // Calculate new dimensions while maintaining aspect ratio
+                    if (width > height) {
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+                    } else {
+                        if (height > maxHeight) {
+                            width = Math.round((width * maxHeight) / height);
+                            height = maxHeight;
+                        }
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Convert to base64 with reduced quality
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+                    resolve(compressedBase64);
+                };
+                img.onerror = reject;
+                img.src = base64String;
             });
         }
 
@@ -325,47 +432,84 @@
         document.getElementById('updateProfileForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            const formData = new FormData();
-            formData.append('name', document.getElementById('name').value);
-            formData.append('university', document.getElementById('university').value);
-            formData.append('phone', document.getElementById('phone').value);
-            formData.append('bio', document.getElementById('bio').value);
-            formData.append('carInfo', document.getElementById('carInfo').value);
-            formData.append('licensePlate', document.getElementById('licensePlate').value);
-            
-            // Add profile picture if exists
-            const profileImage = document.getElementById('profileImage');
-            if (profileImage.src && profileImage.src !== '') {
-                // Convert base64 to blob
-                const response = await fetch(profileImage.src);
-                const blob = await response.blob();
-                formData.append('profilePicture', blob, 'profile.jpg');
+            // Check if token exists and is valid
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showError('You are not logged in. Please log in again.');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+                return;
             }
             
+            const updateData = {
+                name: document.getElementById('name').value,
+                university: document.getElementById('university').value,
+                phone: document.getElementById('phone').value,
+                bio: document.getElementById('bio').value,
+                carInfo: document.getElementById('carInfo').value,
+                licensePlate: document.getElementById('licensePlate').value
+            };
+
+            // Handle profile picture
+            const profileImage = document.getElementById('profileImage');
+            if (profileImage.src && profileImage.src.startsWith('data:image')) {
+                try {
+                    // Compress the image before sending
+                    updateData.profilePicture = await compressImage(profileImage.src);
+                } catch (error) {
+                    console.error('Error compressing image:', error);
+                    showError('Failed to process the image. Please try again with a different image.');
+                    return;
+                }
+            }
+
+            // Handle password update if provided
+            const newPassword = document.getElementById('newPassword').value;
+            if (newPassword) {
+                updateData.newPassword = newPassword;
+            }
+
             try {
-                const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-                const response = await fetch('http://localhost:3000/api/users/profile', {
+                // Use the token as is, since it already includes "Bearer " prefix
+                const response = await fetch('/api/users/me', {
                     method: 'PUT',
                     headers: {
-                        'Authorization': authToken
+                        'Content-Type': 'application/json',
+                        'Authorization': token
                     },
-                    body: formData
+                    body: JSON.stringify(updateData)
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to update profile');
+                    const errorData = await response.json();
+                    
+                    // Handle authentication errors
+                    if (response.status === 401) {
+                        showError('Your session has expired. Please log in again.');
+                        setTimeout(() => {
+                            localStorage.removeItem('token');
+                            window.location.href = 'login.html';
+                        }, 2000);
+                        return;
+                    }
+                    
+                    // Handle payload size errors
+                    if (response.status === 413) {
+                        throw new Error('The image is too large. Please try a smaller image.');
+                    }
+                    
+                    throw new Error(errorData.message || 'Failed to update profile');
                 }
 
-                const data = await response.json();
+                const result = await response.json();
                 showSuccess('Profile updated successfully!');
-                
-                // Redirect to profile page after a short delay
                 setTimeout(() => {
-                    window.location.href = 'profile.html';
+                    window.location.href = '/profile.html';
                 }, 1500);
             } catch (error) {
                 console.error('Error updating profile:', error);
-                showError('Failed to update profile. Please try again.');
+                showError(error.message || 'Failed to update profile');
             }
         });
 

@@ -160,93 +160,87 @@
             console.log('Token found in localStorage:', token);
         }
 
-        // Fetch user data
-        async function fetchUserData() {
+        // Function to display profile picture
+        function displayProfilePicture(imageData) {
+            const profileImage = document.getElementById('profileImage');
+            const noImagePlaceholder = document.getElementById('noImagePlaceholder');
+            
+            console.log('Displaying profile picture:', imageData ? 'Data received' : 'No data');
+            
+            if (imageData) {
+                if (imageData.startsWith('data:image')) {
+                    // If it's a base64 string (newly taken/selected image)
+                    console.log('Using base64 image data');
+                    profileImage.src = imageData;
+                    profileImage.style.display = 'block';
+                    noImagePlaceholder.style.display = 'none';
+                } else if (imageData.startsWith('http')) {
+                    // If it's a URL (existing image from server)
+                    console.log('Using HTTP URL:', imageData);
+                    profileImage.src = imageData;
+                    profileImage.style.display = 'block';
+                    noImagePlaceholder.style.display = 'none';
+                } else {
+                    // If it's a GridFS ID, construct the full URL
+                    console.log('Using GridFS ID:', imageData);
+                    const serverUrl = window.location.origin;
+                    profileImage.src = `${serverUrl}/api/users/profile-picture/${imageData}`;
+                    profileImage.style.display = 'block';
+                    noImagePlaceholder.style.display = 'none';
+                    
+                    // Handle error if the image fails to load
+                    profileImage.onerror = function() {
+                        console.error('Failed to load profile picture from:', profileImage.src);
+                        profileImage.style.display = 'none';
+                        noImagePlaceholder.style.display = 'flex';
+                    };
+                }
+            } else {
+                // No image data, show placeholder
+                console.log('No profile picture data, showing placeholder');
+                profileImage.style.display = 'none';
+                noImagePlaceholder.style.display = 'flex';
+            }
+        }
+
+        // Function to load user profile
+        async function loadUserProfile() {
             try {
-                // Ensure token is properly formatted
-                const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-                console.log('Using token:', authToken);
+                // Get token and ensure it's properly formatted
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No authentication token found');
+                }
                 
-                const response = await fetch('http://localhost:3000/api/users/me', {
+                // Use the token as is, since it already includes "Bearer " prefix
+                const response = await fetch('/api/users/me', {
                     headers: {
-                        'Authorization': authToken
+                        'Authorization': token
                     }
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error('Server response:', errorData);
-                    
-                    // If not authenticated, redirect to login
-                    if (errorData.message === 'Please authenticate') {
-                        console.log('Authentication failed, redirecting to login');
+                    if (response.status === 401) {
+                        // Handle authentication error
+                        console.error('Authentication failed, redirecting to login');
                         localStorage.removeItem('token');
                         window.location.href = 'login.html';
                         return;
                     }
-                    
-                    throw new Error(`Failed to fetch user data: ${errorData.message}`);
+                    throw new Error('Failed to load profile');
                 }
 
                 const userData = await response.json();
-                console.log('User data:', userData);
-                
-                // Check if profile is incomplete
-                if (userData.isIncomplete) {
-                    console.log('Profile is incomplete, redirecting to complete profile');
-                    // Get temporary token for profile completion
-                    const tempTokenResponse = await fetch('http://localhost:3000/api/users/temp-token', {
-                        headers: {
-                            'Authorization': authToken
-                        }
-                    });
-                    
-                    if (!tempTokenResponse.ok) {
-                        throw new Error('Failed to generate temporary token');
-                    }
-                    
-                    const { tempToken } = await tempTokenResponse.json();
-                    
-                    // Show a message to the user about completing their profile
-                    let message = 'Please complete your profile by setting';
-                    const missingFields = [];
-                    
-                    if (userData.missingFields.university) {
-                        missingFields.push('your university');
-                    }
-                    if (userData.missingFields.password) {
-                        missingFields.push('a password');
-                    }
-                    
-                    message += ' ' + missingFields.join(' and ');
-                    
-                    // Display the message to the user
-                    document.getElementById('userName').textContent = 'Profile Incomplete';
-                    document.getElementById('userEmail').textContent = message;
-                    document.getElementById('userUniversity').textContent = 'Please update your profile';
-                    
-                    return;
-                }
                 
                 // Update profile information
                 document.getElementById('userName').textContent = userData.name || 'No Name Set';
                 document.getElementById('userEmail').textContent = userData.email || 'No Email Set';
-                document.getElementById('userUniversity').textContent = userData.university;
+                document.getElementById('userUniversity').textContent = userData.university || 'Not specified';
                 document.getElementById('memberSince').textContent = userData.createdAt ? 
                     new Date(userData.createdAt).toLocaleDateString() : 'Not Available';
 
-                // Update profile picture
-                const profileImage = document.getElementById('profileImage');
-                const noImagePlaceholder = document.getElementById('noImagePlaceholder');
-                
-                if (userData.profilePicture) {
-                    profileImage.src = userData.profilePicture;
-                    profileImage.style.display = 'block';
-                    noImagePlaceholder.style.display = 'none';
-                } else {
-                    profileImage.style.display = 'none';
-                    noImagePlaceholder.style.display = 'flex';
-                }
+                // Display profile picture
+                displayProfilePicture(userData.profilePicture);
 
                 // Only fetch stats and reviews if user data is complete
                 await Promise.all([
@@ -254,25 +248,18 @@
                     fetchUserReviews()
                 ]);
             } catch (error) {
-                console.error('Error fetching user data:', error);
-                // If not authenticated, redirect to login
-                if (error.message.includes('Please authenticate')) {
-                    localStorage.removeItem('token');
-                    window.location.href = 'login.html';
-                    return;
-                }
-                document.getElementById('userName').textContent = 'Error Loading Profile';
-                document.getElementById('userEmail').textContent = 'Please try again later';
+                console.error('Error loading profile:', error);
+                alert('Failed to load profile information');
             }
         }
 
         // Fetch user stats
         async function fetchUserStats() {
             try {
-                const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+                const token = localStorage.getItem('token');
                 const response = await fetch('http://localhost:3000/api/users/stats', {
                     headers: {
-                        'Authorization': authToken
+                        'Authorization': token
                     }
                 });
 
@@ -299,10 +286,10 @@
         // Fetch user reviews
         async function fetchUserReviews() {
             try {
-                const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+                const token = localStorage.getItem('token');
                 const response = await fetch('http://localhost:3000/api/users/reviews', {
                     headers: {
-                        'Authorization': authToken
+                        'Authorization': token
                     }
                 });
 
@@ -352,7 +339,7 @@
         }
 
         // Initialize page
-        fetchUserData();
+        loadUserProfile();
     </script>
 </body>
 </html> 
