@@ -118,17 +118,9 @@ npm test
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📄 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
 ## 🙏 Acknowledgements
 
 - [Google Maps API](https://developers.google.com/maps) for route visualization
 - [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) for database hosting
 - [Passport.js](http://www.passportjs.org/) for authentication strategies
 - [Express](https://expressjs.com/) for the web framework
-
-## 📞 Contact
-
-For questions or support, please contact the development team at [your-email@example.com](mailto:your-email@example.com).
