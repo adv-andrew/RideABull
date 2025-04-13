@@ -1,58 +1,134 @@
-# Ride A Bull
+# 🚗 RideABull
 
-A student-only secure rideshare application with Google Maps integration.
+<img src="images/rideabull-logo-final.svg" alt="RideABull Logo" width="200">
 
-## Environment Setup
+A secure, student-only rideshare platform exclusively for university students with .edu email addresses. RideABull connects students for safe, affordable rides to and from campus while reducing carbon footprint.
 
-This project uses environment variables to securely manage API keys. Follow these steps to set up your environment:
+## 🌟 Features
 
-1. Create a `.env` file in the root directory of the project
-2. Add your API keys to the `.env` file using the following format:
+- **🔒 Secure Authentication**: Google OAuth and email/password login with .edu email verification
+- **👥 Student-Only Community**: Restricted to verified university students
+- **🚗 Ride Management**: Create, find, and join rides to and from campus
+- **🗺️ Route Visualization**: Google Maps integration for clear route planning
+- **💰 Cost Sharing**: Split travel expenses with fellow students
+- **🌱 Eco Impact**: Track CO₂ emissions saved through carpooling
+- **👤 User Profiles**: Customizable profiles with university verification
+- **📱 Responsive Design**: Clean, modern UI that works on all devices
 
-```
-# Google Maps API Key
-GOOGLE_MAPS_API_KEY=your_google_maps_api_key_here
+## 🛠️ Technology Stack
 
-# Add other API keys as needed
-# GEMINI_API_KEY=your_gemini_api_key_here
-# MIDNIGHT_API_KEY=your_midnight_api_key_here
-```
+- **Frontend**: HTML, CSS, JavaScript
+- **Backend**: Node.js, Express
+- **Database**: MongoDB (Atlas)
+- **Authentication**: JWT, Passport.js, Google OAuth
+- **Maps**: Google Maps API
+- **File Storage**: GridFS for profile pictures
+- **Security**: bcrypt for password hashing
 
-3. Run the build script to generate the file with your API keys:
+## 🚀 Getting Started
 
-```bash
-npm run build
-```
+### Prerequisites
 
-This will create an `env-loader.min.js` file with your API keys that will be used by the application.
+- Node.js (v14 or higher)
+- npm (v6 or higher)
+- MongoDB Atlas account (or local MongoDB installation)
+- Google Cloud Platform account for API keys
 
-**Note:** Both the `.env` file and the generated `env-loader.min.js` file are included in `.gitignore` to prevent sensitive information from being pushed to your repository.
+### Installation
 
-## How It Works
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/rideabull.git
+   cd rideabull
+   ```
 
-1. Your API keys are stored in the `.env` file
-2. The build script (`build.js`) reads the `.env` file and creates `env-loader.min.js` with your actual API keys
-3. The HTML files include `env-loader.min.js` which loads the Google Maps API with your key
-4. When you push to Git, both `.env` and `env-loader.min.js` are ignored, keeping your API keys private
-
-## Getting Started
-
-To run the application locally:
-
-1. Install dependencies (if any):
+2. **Install dependencies**
    ```bash
    npm install
    ```
 
-2. Build the application to generate the API key file:
-   ```bash
-   npm run build
+3. **Set up environment variables**
+   Create a `.env` file in the root directory with the following variables:
+   ```
+   # API Keys
+   GOOGLE_MAPS_API_KEY=your_google_maps_api_key
+   GEMINI_API_KEY=your_gemini_api_key
+
+   # MongoDB Configuration
+   MONGODB_URI=your_mongodb_connection_string
+   PORT=3000
+
+   # JWT Configuration
+   JWT_SECRET=your_jwt_secret_key
+
+   # Google OAuth Configuration
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
    ```
 
-3. Open `ride_details.html` in your browser to see the application.
+4. **Start the server**
+   ```bash
+   npm start
+   ```
+   For development with auto-reload:
+   ```bash
+   npm run dev
+   ```
 
-## Features
+5. **Access the application**
+   Open your browser and navigate to `http://localhost:3000`
 
-- 🚗 Ride Creation and Management
-- 🗺️ Google Maps integration for route visualization
-- 🌱 Eco-friendly CO₂ savings tracking
+## 🔐 Authentication Flow
+
+1. **Email/Password Registration**:
+   - Students register with a valid .edu email address
+   - Email verification ensures university affiliation
+   - Passwords are securely hashed using bcrypt
+
+2. **Google OAuth**:
+   - Students can sign in with their university Google accounts
+   - Only .edu email addresses are accepted
+   - Streamlined authentication process
+
+3. **JWT Authentication**:
+   - Secure token-based authentication for all API requests
+   - Tokens expire for enhanced security
+
+## 📱 Application Structure
+
+- **Landing Page**: Introduction to RideABull with key features
+- **Authentication Pages**: Login and registration with Google OAuth
+- **Ride Listings**: Browse available rides with filters
+- **Ride Details**: View route, driver info, and ride specifics
+- **Ride Creation**: Post new rides with route planning
+- **User Profile**: Manage personal information and preferences
+
+## 🧪 Testing
+
+To run tests:
+```bash
+npm test
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🙏 Acknowledgements
+
+- [Google Maps API](https://developers.google.com/maps) for route visualization
+- [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) for database hosting
+- [Passport.js](http://www.passportjs.org/) for authentication strategies
+- [Express](https://expressjs.com/) for the web framework
+
+## 📞 Contact
+
+For questions or support, please contact the development team at [your-email@example.com](mailto:your-email@example.com).
