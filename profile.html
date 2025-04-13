@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Ride A Bull</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="index.html" class="navbar-brand">
+                <i class="fas fa-car-side text-primary"></i> Ride A Bull
+            </a>
+            <div class="navbar-nav">
+                <div class="nav-item">
+                    <a href="rides.html" class="nav-link">Rides</a>
+                </div>
+                <div class="nav-item">
+                    <a href="profile.html" class="nav-link active">Profile</a>
+                </div>
+                <div class="nav-item">
+                    <button onclick="logout()" class="nav-link btn-link">Logout</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="profile-header card p-5 mb-5">
+            <div class="profile-info">
+                <div class="profile-avatar">
+                    <img id="profileImage" src="" alt="Profile Picture" style="display: none; width: 150px; height: 150px; border-radius: 50%; object-fit: cover;">
+                    <div id="noImagePlaceholder" class="no-image-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <div class="profile-details">
+                    <h2 id="userName">Loading...</h2>
+                    <p class="text-muted" id="userEmail"></p>
+                    <div class="university-badge">
+                        <i class="fas fa-university"></i>
+                        <span id="userUniversity"></span>
+                    </div>
+                    <a href="update_profile.html" class="btn btn-outline-primary mt-3">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card p-4 mb-4">
+                    <h3>
+                        <i class="fas fa-star text-warning"></i>
+                        Reviews
+                    </h3>
+                    <div id="reviewsList" class="reviews-list">
+                        <!-- Reviews will be populated here -->
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card p-4 mb-4">
+                    <h3>
+                        <i class="fas fa-chart-simple text-primary"></i>
+                        Stats
+                    </h3>
+                    <div class="stats-list">
+                        <div class="stat-item">
+                            <span class="stat-label">Rides Given</span>
+                            <span class="stat-value" id="ridesGiven">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Rides Taken</span>
+                            <span class="stat-value" id="ridesTaken">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Average Rating</span>
+                            <span class="stat-value" id="averageRating">-</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Member Since</span>
+                            <span class="stat-value" id="memberSince">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card p-4">
+                    <h3>
+                        <i class="fas fa-shield-alt text-success"></i>
+                        Verification
+                    </h3>
+                    <div class="verification-list">
+                        <div class="verification-item">
+                            <i class="fas fa-check-circle text-success"></i>
+                            <span>Email Verified</span>
+                        </div>
+                        <div class="verification-item">
+                            <i class="fas fa-university text-primary"></i>
+                            <span>Student Status Verified</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            gap: 20px;
+        }
+        
+        .profile-picture {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            overflow: hidden;
+            background-color: #f8f9fa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #dee2e6;
+        }
+        
+        .no-image-placeholder {
+            font-size: 60px;
+            color: #dee2e6;
+        }
+        
+        .profile-info {
+            flex: 1;
+        }
+    </style>
+
+    <script>
+        // Check for token in URL parameters (from Google OAuth)
+        const urlParams = new URLSearchParams(window.location.search);
+        const tokenFromUrl = urlParams.get('token');
+        if (tokenFromUrl) {
+            console.log('Token found in URL, storing it');
+            localStorage.setItem('token', tokenFromUrl);
+            // Clean up URL
+            window.history.replaceState({}, document.title, '/profile.html');
+        }
+
+        // Check authentication
+        const token = localStorage.getItem('token');
+        if (!token) {
+            console.log('No token found, redirecting to login');
+            window.location.href = 'login.html';
+        } else {
+            console.log('Token found in localStorage:', token);
+        }
+
+        // Function to display profile picture
+        function displayProfilePicture(imageData) {
+            const profileImage = document.getElementById('profileImage');
+            const noImagePlaceholder = document.getElementById('noImagePlaceholder');
+            
+            console.log('Displaying profile picture:', imageData ? 'Data received' : 'No data');
+            
+            if (imageData) {
+                if (imageData.startsWith('data:image')) {
+                    // If it's a base64 string (newly taken/selected image)
+                    console.log('Using base64 image data');
+                    profileImage.src = imageData;
+                    profileImage.style.display = 'block';
+                    noImagePlaceholder.style.display = 'none';
+                } else if (imageData.startsWith('http')) {
+                    // If it's a URL (existing image from server)
+                    console.log('Using HTTP URL:', imageData);
+                    profileImage.src = imageData;
+                    profileImage.style.display = 'block';
+                    noImagePlaceholder.style.display = 'none';
+                } else {
+                    // If it's a GridFS ID, construct the full URL
+                    console.log('Using GridFS ID:', imageData);
+                    const serverUrl = window.location.origin;
+                    profileImage.src = `${serverUrl}/api/users/profile-picture/${imageData}`;
+                    profileImage.style.display = 'block';
+                    noImagePlaceholder.style.display = 'none';
+                    
+                    // Handle error if the image fails to load
+                    profileImage.onerror = function() {
+                        console.error('Failed to load profile picture from:', profileImage.src);
+                        profileImage.style.display = 'none';
+                        noImagePlaceholder.style.display = 'flex';
+                    };
+                }
+            } else {
+                // No image data, show placeholder
+                console.log('No profile picture data, showing placeholder');
+                profileImage.style.display = 'none';
+                noImagePlaceholder.style.display = 'flex';
+            }
+        }
+
+        // Function to load user profile
+        async function loadUserProfile() {
+            try {
+                // Get token and ensure it's properly formatted
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('No authentication token found');
+                }
+                
+                // Use the token as is, since it already includes "Bearer " prefix
+                const response = await fetch('/api/users/me', {
+                    headers: {
+                        'Authorization': token
+                    }
+                });
+
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        // Handle authentication error
+                        console.error('Authentication failed, redirecting to login');
+                        localStorage.removeItem('token');
+                        window.location.href = 'login.html';
+                        return;
+                    }
+                    throw new Error('Failed to load profile');
+                }
+
+                const userData = await response.json();
+                
+                // Update profile information
+                document.getElementById('userName').textContent = userData.name || 'No Name Set';
+                document.getElementById('userEmail').textContent = userData.email || 'No Email Set';
+                document.getElementById('userUniversity').textContent = userData.university || 'Not specified';
+                document.getElementById('memberSince').textContent = userData.createdAt ? 
+                    new Date(userData.createdAt).toLocaleDateString() : 'Not Available';
+
+                // Display profile picture
+                displayProfilePicture(userData.profilePicture);
+
+                // Only fetch stats and reviews if user data is complete
+                await Promise.all([
+                    fetchUserStats(),
+                    fetchUserReviews()
+                ]);
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                alert('Failed to load profile information');
+            }
+        }
+
+        // Fetch user stats
+        async function fetchUserStats() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('http://localhost:3000/api/users/stats', {
+                    headers: {
+                        'Authorization': token
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch user stats');
+                }
+
+                const stats = await response.json();
+                
+                // Update stats with fallbacks
+                document.getElementById('ridesGiven').textContent = stats.ridesGiven || '0';
+                document.getElementById('ridesTaken').textContent = stats.ridesTaken || '0';
+                document.getElementById('averageRating').textContent = 
+                    stats.averageRating ? stats.averageRating.toFixed(1) : '-';
+            } catch (error) {
+                console.error('Error fetching user stats:', error);
+                // Set default values for stats
+                document.getElementById('ridesGiven').textContent = '0';
+                document.getElementById('ridesTaken').textContent = '0';
+                document.getElementById('averageRating').textContent = '-';
+            }
+        }
+
+        // Fetch user reviews
+        async function fetchUserReviews() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('http://localhost:3000/api/users/reviews', {
+                    headers: {
+                        'Authorization': token
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch reviews');
+                }
+
+                const reviews = await response.json();
+                const reviewsList = document.getElementById('reviewsList');
+                
+                if (!reviews || reviews.length === 0) {
+                    reviewsList.innerHTML = '<p class="text-muted">No reviews yet</p>';
+                    return;
+                }
+
+                reviewsList.innerHTML = reviews.map(review => `
+                    <div class="review-item">
+                        <div class="review-header">
+                            <div class="review-rating">
+                                ${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)}
+                            </div>
+                            <div class="review-date">
+                                ${new Date(review.createdAt).toLocaleDateString()}
+                            </div>
+                        </div>
+                        <div class="review-content">
+                            <p>${review.comment}</p>
+                        </div>
+                        <div class="review-footer">
+                            <span class="review-author">
+                                - ${review.authorName || 'Anonymous'}
+                            </span>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error fetching reviews:', error);
+                document.getElementById('reviewsList').innerHTML = 
+                    '<p class="text-muted">No reviews available</p>';
+            }
+        }
+
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href = 'login.html';
+        }
+
+        // Initialize page
+        loadUserProfile();
+    </script>
+</body>
+</html> 
