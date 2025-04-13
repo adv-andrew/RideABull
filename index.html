@@ -29,6 +29,19 @@
                     </div>
                     <button type="submit" class="btn" style="width: 100%;">Login with University Email</button>
                 </form>
+                
+                <div style="margin: 1rem 0; text-align: center;">
+                    <div style="display: flex; align-items: center; margin: 1rem 0;">
+                        <div style="flex: 1; height: 1px; background: #ddd;"></div>
+                        <span style="padding: 0 1rem; color: #666;">or</span>
+                        <div style="flex: 1; height: 1px; background: #ddd;"></div>
+                    </div>
+                    
+                    <a href="/api/auth/google" class="btn google-btn" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <img src="https://www.google.com/favicon.ico" alt="Google" style="width: 18px; height: 18px;">
+                        Login with Google
+                    </a>
+                </div>
             </div>
 
             <p style="margin-top: 2rem;">
@@ -38,6 +51,14 @@
     </div>
 
     <script>
+        // Check for token in URL (from Google OAuth callback)
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        if (token) {
+            localStorage.setItem('token', `Bearer ${token}`);
+            window.location.href = 'rides.html';
+        }
+
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -58,7 +79,6 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    // Store token with Bearer prefix
                     localStorage.setItem('token', `Bearer ${data.token}`);
                     console.log('Login successful, token stored:', localStorage.getItem('token'));
                     window.location.href = 'rides.html';

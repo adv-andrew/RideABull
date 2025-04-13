@@ -4,6 +4,8 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const session = require('express-session');
+const { passport, generateToken } = require('./routes/auth');
 
 // Import models
 const User = require('./models/User');
@@ -21,6 +23,17 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.static('.')); // Serve static files from current directory
+
+// Session middleware
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: false
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // MongoDB Connection
 mongoose.connect(process.env.MONGODB_URI)
@@ -226,6 +239,19 @@ app.patch('/api/trips/:tripId/complete', auth, async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
+
+// Google OAuth Routes
+app.get('/api/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+app.get('/api/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    const token = generateToken(req.user);
+    res.redirect(`/index.html?token=${token}`);
+  }
+);
 
 // Start server
 const PORT = process.env.PORT || 3000;
