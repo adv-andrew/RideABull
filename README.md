@@ -1,4 +1,4 @@
-# 🚗 RideABull
+<!-- # 🚗 RideABull -->
 
 <img src="images/rideabull logo top.svg" alt="RideABull Logo" width="200">
 
